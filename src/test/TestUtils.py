@@ -6,11 +6,18 @@ if not './main/mt22/parser/' in sys.path:
     sys.path.append('./main/mt22/parser/')
 if not './main/mt22/astgen/' in sys.path:
     sys.path.append('./main/mt22/astgen/')
+if not './main/mt22/checker/' in sys.path:
+    sys.path.append('./main/mt22/checker/')
+if not './main/mt22/codegen/' in sys.path:
+    sys.path.append('./main/mt22/codegen/')
 if os.path.isdir('../target/main/mt22/parser') and not '../target/main/mt22/parser/' in sys.path:
     sys.path.append('../target/main/mt22/parser/')
 from MT22Lexer import MT22Lexer
 from MT22Parser import MT22Parser
 from ASTGeneration import ASTGeneration
+from StaticChecker import StaticChecker
+from StaticError import *
+from CodeGenerator import CodeGenerator
 from lexererr import *
 import subprocess
 

@@ -3,6 +3,7 @@ from functools import reduce
 
 from Frame import Frame
 from abc import ABC
+
 from Visitor import *
 from AST import *
 
@@ -26,12 +27,19 @@ class Symbol:
 class CodeGenerator:
     def __init__(self):
         self.libName = "io"
-
+    
+    # TODO
     def init(self):
         return [Symbol("readInteger", MType(list(), IntegerType()), CName(self.libName)),
-                Symbol("printInteger", MType([IntegerType()],
-                       VoidType()), CName(self.libName))
-                ]
+                Symbol("printInteger", MType([IntegerType()], VoidType()), CName(self.libName)),
+                Symbol("readFloat", MType(list(), FloatType()), CName(self.libName)),
+                Symbol("writeFloat", MType([FloatType()], VoidType()), CName(self.libName)),
+                Symbol("readBoolean", MType(list(), BooleanType()), CName(self.libName)),
+                Symbol("printBoolean", MType([BooleanType()], VoidType()), CName(self.libName)),
+                Symbol("readString", MType(list(), StringType()), CName(self.libName)),
+                Symbol("printString", MType([StringType()], VoidType()), CName(self.libName))]
+
+    ############################################################################################
 
     def gen(self, ast, path):
         # ast: AST
@@ -70,79 +78,24 @@ class CName(Val):
         self.value = value
 
 
-class CodeGenVisitor(BaseVisitor):
-    def __init__(self, astTree, env, path):
-        self.astTree = astTree
+class CodeGenVisitor(Visitor):
+    def __init__(self, ast, env, path):
+        self.ast = ast
         self.env = env
         self.path = path
+    
+    # Types
+    
+    # Literals
+    def visitBinaryOp(self, ast, o):
+        e1c, e1t = self.visit(ast.left, o)
+        e2c, e2t = self.visit(ast.right, o)
+        return e1c + e2c + self.emit.emitADDOP(ast.op, e1t, o.frame), e1t
+    
+    def visitIntegerLit(self, ast, o):
+        return self.emit.emitPUSHICONST(ast.value, o.frame), IntegerType()
 
-    def visitProgram(self, ast, c):
-        [self.visit(i, c)for i in ast.decl]
-        return c
-
-    def visitClassDecl(self, ast, c):
-        self.className = ast.classname.name
-        self.emit = Emitter(self.path+"/" + self.className + ".j")
-        self.emit.printout(self.emit.emitPROLOG(
-            self.className, "java.lang.Object"))
-        [self.visit(ele, SubBody(None, self.env))
-         for ele in ast.memlist if type(ele) == MethodDecl]
-        # generate default constructor
-        self.genMETHOD(MethodDecl(Instance(), Id("<init>"), list(
-        ), None, Block([], [])), c, Frame("<init>", VoidType()))
-        self.emit.emitEPILOG()
-        return c
-
-    def genMETHOD(self, consdecl, o, frame):
-        isInit = consdecl.returnType is None
-        isMain = consdecl.name.name == "main" and len(
-            consdecl.param) == 0 and type(consdecl.returnType) is VoidType
-        returnType = VoidType() if isInit else consdecl.returnType
-        methodName = "<init>" if isInit else consdecl.name.name
-        intype = [ArrayType(0, StringType())] if isMain else list(
-            map(lambda x: x.typ, consdecl.param))
-        mtype = MType(intype, returnType)
-
-        self.emit.printout(self.emit.emitMETHOD(
-            methodName, mtype, not isInit, frame))
-
-        frame.enterScope(True)
-
-        glenv = o
-
-        # Generate code for parameter declarations
-        if isInit:
-            self.emit.printout(self.emit.emitVAR(frame.getNewIndex(), "this", ClassType(
-                Id(self.className)), frame.getStartLabel(), frame.getEndLabel(), frame))
-        elif isMain:
-            self.emit.printout(self.emit.emitVAR(frame.getNewIndex(), "args", ArrayType(
-                0, StringType()), frame.getStartLabel(), frame.getEndLabel(), frame))
-        else:
-            local = reduce(lambda env, ele: SubBody(
-                frame, [self.visit(ele, env)]+env.sym), consdecl.param, SubBody(frame, []))
-            glenv = local.sym+glenv
-
-        body = consdecl.body
-        self.emit.printout(self.emit.emitLABEL(frame.getStartLabel(), frame))
-
-        # Generate code for statements
-        if isInit:
-            self.emit.printout(self.emit.emitREADVAR(
-                "this", ClassType(Id(self.className)), 0, frame))
-            self.emit.printout(self.emit.emitINVOKESPECIAL(frame))
-        list(map(lambda x: self.visit(x, SubBody(frame, glenv)), body.stmt))
-
-        self.emit.printout(self.emit.emitLABEL(frame.getEndLabel(), frame))
-        if type(returnType) is VoidType:
-            self.emit.printout(self.emit.emitRETURN(VoidType(), frame))
-        self.emit.printout(self.emit.emitENDMETHOD(frame))
-        frame.exitScope()
-
-    def visitFuncDecl(self, ast, o):
-        frame = Frame(ast.name, ast.returnType)
-        self.genMETHOD(ast, o.sym, frame)
-        return Symbol(ast.name, MType([x.typ for x in ast.param], ast.returnType), CName(self.className))
-
+    # Statements
     def visitCallStmt(self, ast, o):
         ctxt = o
         frame = ctxt.frame
@@ -157,11 +110,71 @@ class CodeGenVisitor(BaseVisitor):
         self.emit.printout(in_[0])
         self.emit.printout(self.emit.emitINVOKESTATIC(
             cname + "/" + ast.method.name, ctype, frame))
+    
+    # Declarations
+    def visitVarDecl(self, ast, o):
+        name = ast.name
+        typ = ast.typ
+        init = ast.init
+        
+        frame = Frame(name, typ)
+        
+        label = frame.getNewLabel()
+        
+        idx = frame.getNewIndex()
+        
+        res = self.emit.emitVAR(idx, name, typ, label, label, frame)
+        
+        self.emit.printout(res)
+        
+        self.emit.emitEPILOG()
+        print(2313)
+        return Symbol(name, typ, Index(idx))
+        
+    # def visitParamDecl(self, ast, o): pass
+    
+    def visitFuncDecl(self, ast, o):
+        frame = Frame(ast.name, ast.returnType)
+        self.genMETHOD(ast, o.sym, frame)
+        return Symbol(ast.name, MType([x.typ for x in ast.param], ast.return_type), CName(self.className))
 
-    def visitIntLiteral(self, ast, o):
-        return self.emit.emitPUSHICONST(ast.value, o.frame), IntegerType()
+    def visitProgram(self, ast, c):
+        self.emit = Emitter(self.path + "/" + "MT22Class" +  ".j")
+        [self.visit(i, c)for i in ast.decls]
+        return c
+    
+    # def visitIntegerType(self, ast, o): pass
+    # def visitFloatType(self, ast, o): pass
+    # def visitBooleanType(self, ast, o): pass
+    # def visitStringType(self, ast, o): pass
+    # def visitArrayType(self, ast, o): pass
+    # def visitAutoType(self, ast, o): pass
+    # def visitVoidType(self, ast, o): pass
 
-    def visitBinaryOp(self, ast, o):
-        e1c, e1t = self.visit(ast.left, o)
-        e2c, e2t = self.visit(ast.right, o)
-        return e1c + e2c + self.emit.emitADDOP(ast.op, e1t, o.frame), e1t
+    # def visitBinExpr(self, ast, o): pass
+    # def visitUnExpr(self, ast, o): pass
+    # def visitId(self, ast, o): pass
+    # def visitArrayCell(self, ast, o): pass
+    # def visitIntegerLit(self, ast, o): pass
+    # def visitFloatLit(self, ast, o): pass
+    # def visitStringLit(self, ast, o): pass
+    # def visitBooleanLit(self, ast, o): pass
+    # def visitArrayLit(self, ast, o): pass
+    # def visitFuncCall(self, ast, o): pass
+
+    # def visitAssignStmt(self, ast, o): pass
+    # def visitBlockStmt(self, ast, o): pass
+    # def visitIfStmt(self, ast, o): pass
+    # def visitForStmt(self, ast, o): pass
+    # def visitWhileStmt(self, ast, o): pass
+    # def visitDoWhileStmt(self, ast, o): pass
+    # def visitBreakStmt(self, ast, o): pass
+    # def visitContinueStmt(self, ast, o): pass
+    # def visitReturnStmt(self, ast, o): pass
+    # def visitCallStmt(self, ast, o): pass
+
+    # def visitVarDecl(self, ast, o): pass
+    # def visitParamDecl(self, ast, o): pass
+    # def visitFuncDecl(self, ast, o): pass
+
+    # def visitProgram(self, ast, o): pass

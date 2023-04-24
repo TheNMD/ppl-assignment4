@@ -4,4 +4,7 @@ from AST import *
 
 
 class CheckCodeGenSuite(unittest.TestCase):
-    pass
+    def test1(self):
+        input = """x : integer = 3 ; """
+        expect = ""
+        self.assertTrue(TestCodeGen.test(input, expect, 501))
