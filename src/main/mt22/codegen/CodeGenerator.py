@@ -128,10 +128,8 @@ class CodeGenVisitor(Visitor):
         self.emit.printout(res)
         
         self.emit.emitEPILOG()
-        print(2313)
-        return Symbol(name, typ, Index(idx))
         
-    # def visitParamDecl(self, ast, o): pass
+    def visitParamDecl(self, ast, o): pass
     
     def visitFuncDecl(self, ast, o):
         frame = Frame(ast.name, ast.returnType)
