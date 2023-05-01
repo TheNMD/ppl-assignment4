@@ -131,10 +131,7 @@ class CodeGenVisitor(Visitor):
         
     def visitParamDecl(self, ast, o): pass
     
-    def visitFuncDecl(self, ast, o):
-        frame = Frame(ast.name, ast.returnType)
-        self.genMETHOD(ast, o.sym, frame)
-        return Symbol(ast.name, MType([x.typ for x in ast.param], ast.return_type), CName(self.className))
+    def visitFuncDecl(self, ast, o): pass
 
     def visitProgram(self, ast, c):
         self.emit = Emitter(self.path + "/" + "MT22Class" +  ".j")

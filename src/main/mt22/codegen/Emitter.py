@@ -641,6 +641,7 @@ class Emitter():
         return self.jvm.emitLIMITLOCAL(num)
 
     def emitEPILOG(self):
+        print(self.filename)
         file = open(self.filename, "w")
         file.write(''.join(self.buff))
         file.close()
