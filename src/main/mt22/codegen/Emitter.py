@@ -55,13 +55,15 @@ class Emitter():
                 return self.jvm.emitBIPUSH(i)
             elif i >= -32768 and i <= 32767:
                 return self.jvm.emitSIPUSH(i)
-        elif type(in_) is str:
-            if in_ == "true":
-                return self.emitPUSHICONST(1, frame)
-            elif in_ == "false":
-                return self.emitPUSHICONST(0, frame)
             else:
-                return self.emitPUSHICONST(int(in_), frame)
+                return self.jvm.emitLDC(str(i))
+        elif type(in_) is str:
+            if in_ == "True":
+                return self.jvm.emitICONST(1)
+            elif in_ == "False":
+                return self.jvm.emitICONST(0)
+            else:
+                return self.jvm.emitLDC(f""" "{in_}" """)
 
     def emitPUSHFCONST(self, in_, frame):
         # in_: String
@@ -81,23 +83,23 @@ class Emitter():
     *    @param typ the type of the constant
     '''
 
-    def emitPUSHCONST(self, in_, typ, frame):
-        # in_: String
-        # typ: Type
-        # frame: Frame
+    # def emitPUSHCONST(self, in_, typ, frame):
+    #     # in_: String
+    #     # typ: Type
+    #     # frame: Frame
 
-        if type(typ) is IntegerType:
-            return self.emitPUSHICONST(in_, frame)
-        elif type(typ) is FloatType:
-            return self.emitPUSHFCONST(in_, frame)
-        elif type(typ) is BooleanType:
-            return self.emitPUSHICONST(in_, frame)
-        # TODO Xem lai
-        elif type(typ) is StringType:
-            frame.push()
-            return self.jvm.emitLDC(in_)
-        else:
-            raise IllegalOperandException(in_)
+    #     if type(typ) is IntegerType:
+    #         return self.emitPUSHICONST(in_, frame)
+    #     elif type(typ) is FloatType:
+    #         return self.emitPUSHFCONST(in_, frame)
+    #     elif type(typ) is BooleanType:
+    #         return self.emitPUSHICONST(in_, frame)
+    #     # TODO Xem lai
+    #     elif type(typ) is StringType:
+    #         frame.push()
+    #         return self.jvm.emitLDC(in_)
+    #     else:
+    #         raise IllegalOperandException(in_)
     
     def emitALOAD(self, in_, frame):
         # in_: Type

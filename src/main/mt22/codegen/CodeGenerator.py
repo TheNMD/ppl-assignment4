@@ -39,8 +39,6 @@ class CodeGenerator:
                 Symbol("readString", MType(list(), StringType()), CName(self.libName)),
                 Symbol("printString", MType([StringType()], VoidType()), CName(self.libName))]
 
-    ############################################################################################
-
     def gen(self, ast, path):
         # ast: AST
         # dir_: String
@@ -104,18 +102,25 @@ class CodeGenVisitor(Visitor):
     
     def visitUnExpr(self, ast, o): pass
     
-    def visitId(self, ast, o): pass
+    def visitId(self, ast, o):
+        sym = o.sym
+        for ele in sym:
+            if ele.name == ast.name:
+                return (ele.name, ele.mtype, ele.value)
     
     def visitArrayCell(self, ast, o): pass
     
     def visitIntegerLit(self, ast, o):
-        return self.emit.emitPUSHICONST(ast.value, o.frame), IntegerType()
+        return (ast.val, IntegerType(), -1)
+        
+    def visitFloatLit(self, ast, o):
+        return (str(ast.val), FloatType(), -1)
     
-    def visitFloatLit(self, ast, o): pass
+    def visitBooleanLit(self, ast, o):
+        return (str(ast.val), BooleanType(), -1)
     
-    def visitStringLit(self, ast, o): pass
-    
-    def visitBooleanLit(self, ast, o): pass
+    def visitStringLit(self, ast, o):
+        return (str(ast.val), StringType(), -1)
     
     def visitArrayLit(self, ast, o): pass
     
@@ -123,7 +128,44 @@ class CodeGenVisitor(Visitor):
     
 
     # Statements
-    def visitAssignStmt(self, ast, o): pass
+    def visitAssignStmt(self, ast, o):
+        frame = o.frame
+        lhs = ast.lhs
+        rhs = ast.rhs
+        # (value or name, type, index)
+        left = self.visit(ast.lhs, o)
+        right = self.visit(ast.rhs, o)
+        
+        if type(lhs) == Id:
+            if type(rhs) == BinExpr:
+                pass
+            elif type(rhs) == UnExpr:
+                pass
+            elif type(rhs) == Id:
+                pass
+            elif type(rhs) == ArrayCell:
+                pass
+            elif type(rhs) == IntegerLit:
+                self.emit.printout(self.emit.emitPUSHICONST(right[0], frame))
+                if (type(left[1]) == FloatType):
+                    self.emit.printout(self.emit.emitI2F(frame))
+                self.emit.printout(self.emit.emitWRITEVAR(left[0], left[1], left[2], frame))
+            elif type(rhs) == FloatLit:
+                self.emit.printout(self.emit.emitPUSHFCONST(right[0], o.frame))
+                self.emit.printout(self.emit.emitWRITEVAR(left[0], left[1], left[2], frame))
+            elif type(rhs) == BooleanLit:
+                self.emit.printout(self.emit.emitPUSHICONST(right[0], frame))
+                self.emit.printout(self.emit.emitWRITEVAR(left[0], left[1], left[2], frame))
+            elif type(rhs) == StringLit:   
+                self.emit.printout(self.emit.emitPUSHICONST(right[0], frame))
+                self.emit.printout(self.emit.emitWRITEVAR(left[0], left[1], left[2], frame))
+            elif type(rhs) == ArrayLit:
+                pass
+            elif type(rhs) == FuncCall:
+                pass
+        elif type(lhs) == ArrayCell:
+            pass
+        
     
     def visitBlockStmt(self, ast, o): pass
     
@@ -147,8 +189,7 @@ class CodeGenVisitor(Visitor):
     def visitVarDecl(self, ast, o):
         name = ast.name
         typ = ast.typ
-        init = ast.init
-        frame = self.frame
+        frame = o.frame
         
         idx = frame.getNewIndex()
         start_label = frame.getStartLabel()
@@ -156,30 +197,39 @@ class CodeGenVisitor(Visitor):
         
         self.emit.printout(self.emit.emitVAR(idx, name, typ, start_label, end_label, frame))
         
+        return Symbol(name, typ, idx)
+        
     def visitParamDecl(self, ast, o): pass
     
     def visitFuncDecl(self, ast, o): pass
 
+    # Program
     def visitProgram(self, ast, o):
-        self.frame = Frame("global", None)
-
+        frame = Frame("global_frame", None)
         self.emit = Emitter(self.path + "/" + "MT22Class" +  ".j")
         
         self.emit.printout(self.emit.emitPROLOG("MT22Class", "java.lang.Object"))
         
-        self.emit.printout(self.emit.emitMETHOD("main", MType([ArrayType(0, StringType())], VoidType()), True, self.frame))
+        self.emit.printout(self.emit.emitMETHOD("main", MType([ArrayType(0, StringType())], VoidType()), True, frame))
         
-        self.frame.enterScope(True)
-
-        self.emit.printout(self.emit.emitLABEL(self.frame.getStartLabel(), self.frame))
+        frame.enterScope(True)
+        
+        global_evn = SubBody(frame, [])
+        for decl in ast.decls:
+            global_evn.sym += [self.visit(decl, global_evn)]
+        
+        self.emit.printout(self.emit.emitLABEL(frame.getStartLabel(), frame))
         
         for decl in ast.decls:
-            self.visit(decl, o)
+            if type(decl) == VarDecl and decl.init:
+                self.visit(AssignStmt(Id(decl.name), decl.init), global_evn)
         
-        self.emit.printout(self.emit.emitLABEL(self.frame.getEndLabel(), self.frame))
-        self.emit.printout(self.emit.emitRETURN(VoidType(), self.frame))
-        self.emit.printout(self.emit.emitENDMETHOD(self.frame))
+        self.emit.printout(self.emit.emitLABEL(frame.getEndLabel(), frame))
         
-        self.frame.exitScope()
+        self.emit.printout(self.emit.emitRETURN(VoidType(), frame))
+        
+        self.emit.printout(self.emit.emitENDMETHOD(frame))
+        
+        frame.exitScope()
             
         self.emit.emitEPILOG()

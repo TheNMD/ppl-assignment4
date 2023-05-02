@@ -1,1 +1,6 @@
-a : integer ; b : float ; c : boolean ; d : string ;
+a : integer = 32768 ; 
+                   b : float = 13.2 ; 
+                   b1 : float = 13 ;
+                   c : boolean = true ; 
+                   c1 : boolean = false ;
+                   d : string = "abc" ;
