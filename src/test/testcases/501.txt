@@ -1,1 +1,1 @@
-x : integer = 3 ; 
+a : integer ; b : float ; c : boolean ; d : string ;

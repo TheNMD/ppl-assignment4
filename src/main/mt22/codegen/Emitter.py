@@ -14,19 +14,18 @@ class Emitter():
 
     def getJVMType(self, inType):
         typeIn = type(inType)
-        # TODO FloatType, BooleanType
         if typeIn is IntegerType:
             return "I"
         elif typeIn is FloatType:
             return "F"
         elif typeIn is StringType:
             return "Ljava/lang/String;"
-        elif typeIn is BoolType:
+        elif typeIn is BooleanType:
             return "Z"
         elif typeIn is VoidType:
             return "V"
         elif typeIn is ArrayType:
-            return "[" + self.getJVMType(inType.eleType)
+            return "[" + self.getJVMType(inType.typ)
         elif typeIn is cgen.MType:
             return "(" + "".join(list(map(lambda x: self.getJVMType(x), inType.partype))) + ")" + self.getJVMType(inType.rettype)
 
@@ -36,7 +35,7 @@ class Emitter():
             return "int"
         elif typeIn is FloatType:
             return "float"
-        elif typeIn is BoolType:
+        elif typeIn is BooleanType:
             return "boolean"
         elif typeIn is StringType:
             return "java/lang/String"
@@ -93,7 +92,7 @@ class Emitter():
             return self.emitPUSHFCONST(in_, frame)
         elif type(typ) is BooleanType:
             return self.emitPUSHICONST(in_, frame)
-        # TODO Xem laij
+        # TODO Xem lai
         elif type(typ) is StringType:
             frame.push()
             return self.jvm.emitLDC(in_)
@@ -110,7 +109,7 @@ class Emitter():
             return self.jvm.emitIALOAD()
         elif type(in_) is FloatType:
             return self.jvm.emitFALOAD()
-        elif type(in_) is BoolType:
+        elif type(in_) is BooleanType:
             return self.jvm.emitIALOAD()
         elif type(in_) is StringType:
             return self.jvm.emitAALOAD()
@@ -130,7 +129,7 @@ class Emitter():
             return self.jvm.emitIASTORE()
         elif type(in_) is FloatType:
             return self.jvm.emitFASTORE()
-        elif type(in_) is BoolType:
+        elif type(in_) is BooleanType:
             return self.jvm.emitIASTORE()
         elif type(in_) is StringType:
             return self.jvm.emitAASTORE()

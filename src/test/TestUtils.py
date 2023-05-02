@@ -198,7 +198,7 @@ class TestCodeGen():
         f = open(os.path.join(soldir, str(num) + ".txt"), "w")
         try:
             codeGen.gen(asttree, path)
-
+            
             subprocess.call("java  -jar " + JASMIN_JAR + " " + path +
                             "/MT22Class.j", shell=True, stderr=subprocess.STDOUT)
 

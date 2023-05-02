@@ -148,20 +148,38 @@ class CodeGenVisitor(Visitor):
         name = ast.name
         typ = ast.typ
         init = ast.init
+        frame = self.frame
         
-        frame = Frame(name, typ)
-        label = frame.getNewLabel()
         idx = frame.getNewIndex()
+        start_label = frame.getStartLabel()
+        end_label = frame.getEndLabel()
         
-        res = self.emit.emitVAR(idx, name, typ, label, label, frame)
-        self.emit.printout(res)
-        self.emit.emitEPILOG()
+        self.emit.printout(self.emit.emitVAR(idx, name, typ, start_label, end_label, frame))
         
     def visitParamDecl(self, ast, o): pass
     
     def visitFuncDecl(self, ast, o): pass
 
-    def visitProgram(self, ast, c):
+    def visitProgram(self, ast, o):
+        self.frame = Frame("global", None)
+
         self.emit = Emitter(self.path + "/" + "MT22Class" +  ".j")
-        [self.visit(i, c)for i in ast.decls]
-        return c
+        
+        self.emit.printout(self.emit.emitPROLOG("MT22Class", "java.lang.Object"))
+        
+        self.emit.printout(self.emit.emitMETHOD("main", MType([ArrayType(0, StringType())], VoidType()), True, self.frame))
+        
+        self.frame.enterScope(True)
+
+        self.emit.printout(self.emit.emitLABEL(self.frame.getStartLabel(), self.frame))
+        
+        for decl in ast.decls:
+            self.visit(decl, o)
+        
+        self.emit.printout(self.emit.emitLABEL(self.frame.getEndLabel(), self.frame))
+        self.emit.printout(self.emit.emitRETURN(VoidType(), self.frame))
+        self.emit.printout(self.emit.emitENDMETHOD(self.frame))
+        
+        self.frame.exitScope()
+            
+        self.emit.emitEPILOG()

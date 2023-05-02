@@ -81,7 +81,6 @@ class CodeGenVisitor(Visitor):
         return c
 
     def visitClassDecl(self, ast, c):
-        print(123123213)
         self.className = ast.classname.name
         self.emit = Emitter(self.path+"/" + self.className + ".j")
         self.emit.printout(self.emit.emitPROLOG(
