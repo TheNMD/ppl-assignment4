@@ -28,7 +28,7 @@ class CodeGenerator:
     def __init__(self):
         self.libName = "io"
     
-    # TODO
+    # TODO super va preventdefault
     def init(self):
         return [Symbol("readInteger", MType(list(), IntegerType()), CName(self.libName)),
                 Symbol("printInteger", MType([IntegerType()], VoidType()), CName(self.libName)),
@@ -103,12 +103,20 @@ class CodeGenVisitor(Visitor):
     def visitUnExpr(self, ast, o): pass
     
     def visitId(self, ast, o):
+        frame = o.frame
         sym = o.sym
         
-        # TODO Viet lai ham search
-        for ele in sym:
-            if ele.name == ast.name:
-                return (ele.name, ele.mtype, ele.value)
+        for i in range(len(sym)):
+            for j in range(len(sym[i])):
+                if i == 0:
+                    if sym[i][j].name == ast.name:
+                        self.emit.printout(self.emit.emitGETSTATIC(f"MT22Class/{sym[i][j].name}", sym[i][j].typ, frame))
+                        return sym[i][j].name, sym[i][j].typ
+                else: pass
+                    # TODO khi o trong function
+                    # if sym[i][j].name == ast.name:
+                    #     self.emit.printout(self.emit.emitREADVAR(sym[i][j].name, sym[i][j].typ, frame.getNewIndex(), frame))
+                    #     return sym[i][j].name, sym[i][j].typ
     
     def visitArrayCell(self, ast, o): pass
     
@@ -205,7 +213,7 @@ class CodeGenVisitor(Visitor):
         frame_init = Frame("<init>", VoidType())
         frame_func = Frame("func", VoidType)
         
-        evnList_clinit = SubBody(frame_clinit, [])
+        evnList_clinit = SubBody(frame_clinit, [[decl for decl in ast.decls]])
         evnList_init = SubBody(frame_init, [])
         # evnList in global = [[global_env]]
         # evnList in function = [[global_env], [local_env1], [local_env2], ...]
@@ -229,10 +237,27 @@ class CodeGenVisitor(Visitor):
                 if decl.init:
                     initValue, initType = self.visit(decl.init, evnList_clinit)
                     if type(decl.typ) == FloatType and type(initType) == IntegerType:
-                        self.emit.printout(self.emit.emitI2F())
+                        self.emit.printout(self.emit.emitI2F(frame_clinit))
                     self.emit.printout(self.emit.emitPUTSTATIC(f"MT22Class/{decl.name}", decl.typ, frame_clinit))
                 else:
-                    pass
+                    if type(decl.typ) == IntegerType:
+                        initValue, initType = self.visit(IntegerLit(0), evnList_clinit)
+                        self.emit.printout(self.emit.emitPUTSTATIC(f"MT22Class/{decl.name}", decl.typ, frame_clinit))
+                    elif type(decl.typ) == FloatType:
+                        initValue, initType = self.visit(FloatLit(0.0), evnList_clinit)
+                        self.emit.printout(self.emit.emitPUTSTATIC(f"MT22Class/{decl.name}", decl.typ, frame_clinit))
+                    elif type(decl.typ) == BooleanType:
+                        initValue, initType = self.visit(BooleanLit(False), evnList_clinit)
+                        self.emit.printout(self.emit.emitPUTSTATIC(f"MT22Class/{decl.name}", decl.typ, frame_clinit))
+                    elif type(decl.typ) == StringType:
+                        # TODO Trong Java string ko dc init thi la null
+                        initValue, initType = self.visit(StringLit(""), evnList_clinit)
+                        self.emit.printout(self.emit.emitPUTSTATIC(f"MT22Class/{decl.name}", decl.typ, frame_clinit))
+                    elif type(decl.typ) == ArrayType:
+                        # TODO Array
+                        if len(decl.typ.dimensions) == 1:
+                            print(123)
+                        pass
         self.emit.printout(self.emit.emitLABEL(frame_clinit.getEndLabel(), frame_clinit))
         self.emit.printout(self.emit.emitRETURN(VoidType(), frame_clinit))
         self.emit.printout(self.emit.emitENDMETHOD(frame_clinit))

@@ -1,2 +1,7 @@
- a : integer = 2 ; 
+ a : integer = 2 ;
+                    b : float = 3.3 ;
+                    b1 : float = 3 ;
+                    c : boolean = true ;
+                    c1 : boolean = false ;
+                    d : string = "123" ;
                     main : function void () {}

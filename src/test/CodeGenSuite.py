@@ -23,21 +23,25 @@ class CheckCodeGenSuite(unittest.TestCase):
         self.assertTrue(TestCodeGen.test(input, expect, 502))
     
     def test3(self):
-        input = """ a : integer = 2 ; 
+        input = """ a : integer = 2 ;
+                    b : float = 3.3 ;
+                    b1 : float = 3 ;
+                    c : boolean = true ;
+                    c1 : boolean = false ;
+                    d : string = "123" ;
                     main : function void () {}"""
         expect = ""
         self.assertTrue(TestCodeGen.test(input, expect, 503))
         
-    # def test4(self):
-    #     input = """ a : integer = 23 ; 
-    #                 b : float = a ; 
-    #                 main : function integer () {}"""
-    #     expect = ""
-    #     self.assertTrue(TestCodeGen.test(input, expect, 504))
+    def test4(self):
+        input = """ a : integer = 23 ; 
+                    b : integer = a ; 
+                    main : function void () {}"""
+        expect = ""
+        self.assertTrue(TestCodeGen.test(input, expect, 504))
         
-    # def test5(self):
-    #     input = """x, y : integer = 1, 2 ; 
-    #                a : array [2, 2] of integer = {{x, y}, {3, 4}} ;   
-    #                main : function integer () {} """
-    #     expect = ""
-    #     self.assertTrue(TestCodeGen.test(input, expect, 505))
+    def test5(self):
+        input = """a : array [2] of integer ;   
+                   main : function void () {} """
+        expect = ""
+        self.assertTrue(TestCodeGen.test(input, expect, 505))
