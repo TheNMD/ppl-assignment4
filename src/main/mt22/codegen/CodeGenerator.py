@@ -112,7 +112,8 @@ class CodeGenVisitor(Visitor):
                     if sym[i][j].name == ast.name:
                         self.emit.printout(self.emit.emitGETSTATIC(f"MT22Class/{sym[i][j].name}", sym[i][j].typ, frame))
                         return sym[i][j].name, sym[i][j].typ
-                else: pass
+                else: 
+                    pass
                     # TODO khi o trong function
                     # if sym[i][j].name == ast.name:
                     #     self.emit.printout(self.emit.emitREADVAR(sym[i][j].name, sym[i][j].typ, frame.getNewIndex(), frame))
@@ -254,10 +255,15 @@ class CodeGenVisitor(Visitor):
                         initValue, initType = self.visit(StringLit(""), evnList_clinit)
                         self.emit.printout(self.emit.emitPUTSTATIC(f"MT22Class/{decl.name}", decl.typ, frame_clinit))
                     elif type(decl.typ) == ArrayType:
-                        # TODO Array
                         if len(decl.typ.dimensions) == 1:
-                            print(123)
-                        pass
+                            self.emit.printout(self.emit.emitPUSHICONST(int(decl.typ.dimensions[0]), frame_clinit))
+                            self.emit.printout(self.emit.emitNEWARRAY(decl.typ.typ))
+                            self.emit.printout(self.emit.emitPUTSTATIC(f"MT22Class/{decl.name}", decl.typ, frame_clinit))
+                        else:
+                            # TODO Array
+                            self.emit.printout(self.emit.emitPUSHICONST(int(decl.typ.dimensions[0]), frame_clinit))
+                            self.emit.printout(self.emit.emitANEWARRAY(decl.typ.typ))
+                            self.emit.printout(self.emit.emitPUTSTATIC(f"MT22Class/{decl.name}", decl.typ, frame_clinit))
         self.emit.printout(self.emit.emitLABEL(frame_clinit.getEndLabel(), frame_clinit))
         self.emit.printout(self.emit.emitRETURN(VoidType(), frame_clinit))
         self.emit.printout(self.emit.emitENDMETHOD(frame_clinit))
@@ -277,7 +283,7 @@ class CodeGenVisitor(Visitor):
         
         # Other functions
         for decl in ast.decls:
-            if type(decl) != VarDecl:
+            if type(decl) == FuncDecl:
                 evnList_func.sym[0] += [self.visit(decl, evnList_func)]
-        
+
         self.emit.emitEPILOG()

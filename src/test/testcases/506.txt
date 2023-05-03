@@ -1,2 +1,2 @@
-a : array [2] of integer ;   
+a : array [3, 2] of integer ;   
                    main : function void () {} 

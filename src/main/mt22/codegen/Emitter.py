@@ -18,18 +18,31 @@ class Emitter():
             return "I"
         elif typeIn is FloatType:
             return "F"
-        elif typeIn is StringType:
-            return "Ljava/lang/String;"
         elif typeIn is BooleanType:
             return "Z"
+        elif typeIn is StringType:
+            return "Ljava/lang/String;"
         elif typeIn is VoidType:
             return "V"
         elif typeIn is ArrayType:
-            return "[" + self.getJVMType(inType.typ)
+            if inType.dimensions == 0:
+                return "[" + "Ljava/lang/String;"
+            else:
+                bracket = ""
+                for i in range(len(inType.dimensions)):
+                    bracket += "["
+                if type(inType.typ) == IntegerType:
+                    return bracket + "I"
+                elif type(inType.typ) == FloatType:
+                    return bracket + "F"
+                elif type(inType.typ) == BooleanType:
+                    return bracket + "Z"
+                elif type(inType.typ) == StringType:
+                    return bracket + "Ljava/lang/String;"
         elif typeIn is cgen.MType:
             return "(" + "".join(list(map(lambda x: self.getJVMType(x), inType.partype))) + ")" + self.getJVMType(inType.rettype)
 
-    def getFullType(inType):
+    def getFullType(self, inType):
         typeIn = type(inType)
         if typeIn is IntegerType:
             return "int"
@@ -82,24 +95,6 @@ class Emitter():
     *    @param in the lexeme of the constant
     *    @param typ the type of the constant
     '''
-
-    # def emitPUSHCONST(self, in_, typ, frame):
-    #     # in_: String
-    #     # typ: Type
-    #     # frame: Frame
-
-    #     if type(typ) is IntegerType:
-    #         return self.emitPUSHICONST(in_, frame)
-    #     elif type(typ) is FloatType:
-    #         return self.emitPUSHFCONST(in_, frame)
-    #     elif type(typ) is BooleanType:
-    #         return self.emitPUSHICONST(in_, frame)
-    #     # TODO Xem lai
-    #     elif type(typ) is StringType:
-    #         frame.push()
-    #         return self.jvm.emitLDC(in_)
-    #     else:
-    #         raise IllegalOperandException(in_)
     
     def emitALOAD(self, in_, frame):
         # in_: Type
@@ -115,9 +110,6 @@ class Emitter():
             return self.jvm.emitIALOAD()
         elif type(in_) is StringType:
             return self.jvm.emitAALOAD()
-        # TODO Raise o day co dung khong
-        # else:
-        #     raise IllegalOperandException(str(in_))
 
     def emitASTORE(self, in_, frame):
         # in_: Type
@@ -135,9 +127,6 @@ class Emitter():
             return self.jvm.emitIASTORE()
         elif type(in_) is StringType:
             return self.jvm.emitAASTORE()
-        # TODO Raise o day co dung khong
-        # else:
-        #     raise IllegalOperandException(str(in_))
 
     '''    generate the var directive for a local variable.
     *   @param in the index of the local variable.
@@ -244,7 +233,6 @@ class Emitter():
         # lexeme: String
         # in_: Type
         # isFinal: Boolean
-
         return self.jvm.emitSTATICFIELD(lexeme, self.getJVMType(in_), False)
 
     def emitGETSTATIC(self, lexeme, in_, frame):
@@ -539,10 +527,16 @@ class Emitter():
     *   @param in the type of the local array variable.
     '''
 
-    def emitNEWARRAY(self, name, type, idx, frame):
+    def emitNEWARRAY(self, type):
         buffer = list()
         buffer.append(self.jvm.emitNEWARRAY(self.getFullType(type)))
-        buffer.append(self.emitWRITEVAR(name, type, idx, frame))
+        return ''.join(buffer)
+    
+    def emitANEWARRAY(self, type):
+        buffer = list()
+        bracket = "["
+        # TODO Array
+        buffer.append(self.jvm.emitANEWARRAY(bracket + self.getJVMType(type)))
         return ''.join(buffer)
 
     '''   generate code to initialize local array variables.
