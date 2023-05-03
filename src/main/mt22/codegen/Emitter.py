@@ -155,7 +155,10 @@ class Emitter():
         # toLabel: Int
         # frame: Frame
 
-        return self.jvm.emitVAR(in_, varName, self.getJVMType(inType), fromLabel, toLabel)
+        if type(inType) == str and inType == "LMT22Class;":
+            return self.jvm.emitVAR(in_, varName, inType, fromLabel, toLabel)
+        else:
+            return self.jvm.emitVAR(in_, varName, self.getJVMType(inType), fromLabel, toLabel)
 
     def emitREADVAR(self, name, inType, index, frame):
         # name: String
@@ -172,6 +175,8 @@ class Emitter():
         elif type(inType) is BooleanType:
             return self.jvm.emitILOAD(index)
         elif type(inType) is StringType:
+            return self.jvm.emitALOAD(index)
+        elif type(inType) == str and inType == "LMT22Class;":
             return self.jvm.emitALOAD(index)
         else:
             raise IllegalOperandException(name)
@@ -235,13 +240,12 @@ class Emitter():
     *   @param isFinal true in case of constant; false otherwise
     '''
 
-    def emitATTRIBUTE(self, lexeme, in_, isFinal, value):
+    def emitSTATICFIELD(self, lexeme, in_, isFinal):
         # lexeme: String
         # in_: Type
         # isFinal: Boolean
-        # value: String
 
-        return self.jvm.emitSTATICFIELD(lexeme, self.getJVMType(in_), false)
+        return self.jvm.emitSTATICFIELD(lexeme, self.getJVMType(in_), False)
 
     def emitGETSTATIC(self, lexeme, in_, frame):
         # lexeme: String
@@ -534,6 +538,12 @@ class Emitter():
     *   @param index the index of the local variable.
     *   @param in the type of the local array variable.
     '''
+
+    def emitNEWARRAY(self, name, type, idx, frame):
+        buffer = list()
+        buffer.append(self.jvm.emitNEWARRAY(self.getFullType(type)))
+        buffer.append(self.emitWRITEVAR(name, type, idx, frame))
+        return ''.join(buffer)
 
     '''   generate code to initialize local array variables.
     *   @param in the list of symbol entries corresponding to local array variable.    

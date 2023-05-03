@@ -1,6 +1,12 @@
 .source MT22Class.java
 .class public MT22Class
 .super java.lang.Object
+.field static a I
+.field static b F
+.field static b1 F
+.field static c Z
+.field static c1 Z
+.field static d Ljava/lang/String;
 
 .method public <clinit>()V
 Label0:

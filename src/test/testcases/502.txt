@@ -1,0 +1,8 @@
+
+                    a : integer ;
+                    b : float ;
+                    b1 : float ;
+                    c : boolean ;
+                    c1 : boolean ;
+                    d : string ;
+                    main : function void () {}

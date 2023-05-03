@@ -104,6 +104,8 @@ class CodeGenVisitor(Visitor):
     
     def visitId(self, ast, o):
         sym = o.sym
+        
+        # TODO Viet lai ham search
         for ele in sym:
             if ele.name == ast.name:
                 return (ele.name, ele.mtype, ele.value)
@@ -111,62 +113,37 @@ class CodeGenVisitor(Visitor):
     def visitArrayCell(self, ast, o): pass
     
     def visitIntegerLit(self, ast, o):
-        return (ast.val, IntegerType(), -1)
+        frame = o.frame
+        self.emit.printout(self.emit.emitPUSHICONST(ast.val, frame))
+        return ast.val, IntegerType()
         
     def visitFloatLit(self, ast, o):
-        return (str(ast.val), FloatType(), -1)
+        frame = o.frame
+        self.emit.printout(self.emit.emitPUSHFCONST(str(ast.val), frame))
+        return str(ast.val), FloatType()
     
     def visitBooleanLit(self, ast, o):
-        return (str(ast.val), BooleanType(), -1)
+        frame = o.frame
+        self.emit.printout(self.emit.emitPUSHICONST(str(ast.val), frame))
+        return str(ast.val), BooleanType()
     
     def visitStringLit(self, ast, o):
-        return (str(ast.val), StringType(), -1)
+        frame = o.frame
+        self.emit.printout(self.emit.emitPUSHICONST(str(ast.val), frame))
+        return str(ast.val), StringType()
     
-    def visitArrayLit(self, ast, o): pass
-    
+    def visitArrayLit(self, ast, o):
+        explist = ast.explist
+        res = []
+        for exp in explist:
+            res += [self.visit(exp, o)]
+        return res 
+            
     def visitFuncCall(self, ast, o): pass
-    
 
     # Statements
-    def visitAssignStmt(self, ast, o):
-        frame = o.frame
-        lhs = ast.lhs
-        rhs = ast.rhs
-        # (value or name, type, index)
-        left = self.visit(ast.lhs, o)
-        right = self.visit(ast.rhs, o)
+    def visitAssignStmt(self, ast, o): pass
         
-        if type(lhs) == Id:
-            if type(rhs) == BinExpr:
-                pass
-            elif type(rhs) == UnExpr:
-                pass
-            elif type(rhs) == Id:
-                pass
-            elif type(rhs) == ArrayCell:
-                pass
-            elif type(rhs) == IntegerLit:
-                self.emit.printout(self.emit.emitPUSHICONST(right[0], frame))
-                if (type(left[1]) == FloatType):
-                    self.emit.printout(self.emit.emitI2F(frame))
-                self.emit.printout(self.emit.emitWRITEVAR(left[0], left[1], left[2], frame))
-            elif type(rhs) == FloatLit:
-                self.emit.printout(self.emit.emitPUSHFCONST(right[0], o.frame))
-                self.emit.printout(self.emit.emitWRITEVAR(left[0], left[1], left[2], frame))
-            elif type(rhs) == BooleanLit:
-                self.emit.printout(self.emit.emitPUSHICONST(right[0], frame))
-                self.emit.printout(self.emit.emitWRITEVAR(left[0], left[1], left[2], frame))
-            elif type(rhs) == StringLit:   
-                self.emit.printout(self.emit.emitPUSHICONST(right[0], frame))
-                self.emit.printout(self.emit.emitWRITEVAR(left[0], left[1], left[2], frame))
-            elif type(rhs) == ArrayLit:
-                pass
-            elif type(rhs) == FuncCall:
-                pass
-        elif type(lhs) == ArrayCell:
-            pass
-        
-    
     def visitBlockStmt(self, ast, o): pass
     
     def visitIfStmt(self, ast, o): pass
@@ -189,47 +166,93 @@ class CodeGenVisitor(Visitor):
     def visitVarDecl(self, ast, o):
         name = ast.name
         typ = ast.typ
+        # init = ast.init
+        
+        # sym = o.sym
         frame = o.frame
         
         idx = frame.getNewIndex()
-        start_label = frame.getStartLabel()
-        end_label = frame.getEndLabel()
-        
-        self.emit.printout(self.emit.emitVAR(idx, name, typ, start_label, end_label, frame))
-        
+        # start_label = frame.getStartLabel()
+        # end_label = frame.getEndLabel()
+        # self.emit.printout(self.emit.emitVAR(idx, name, typ, start_label, end_label, frame))
         return Symbol(name, typ, idx)
         
     def visitParamDecl(self, ast, o): pass
     
-    def visitFuncDecl(self, ast, o): pass
+    def visitFuncDecl(self, ast, o):
+        name = ast.name
+        return_type = ast.return_type
+        params = ast.params
+        inherit = ast.inherit
+        body = ast.body
+        frame =  Frame(name, return_type)
+        
+        if name == "main" and type(return_type) == VoidType and len(params) == 0:
+            self.emit.printout(self.emit.emitMETHOD("main", MType([ArrayType(0, StringType())], VoidType()), True, frame))
+            frame.enterScope(True)
+            self.emit.printout(self.emit.emitVAR(frame.getNewIndex(), "args", ArrayType(0, StringType()), frame.getStartLabel(), frame.getEndLabel(), frame))
+            self.emit.printout(self.emit.emitLABEL(frame.getStartLabel(), frame))
+            self.emit.printout(self.emit.emitLABEL(frame.getEndLabel(), frame))
+            self.emit.printout(self.emit.emitRETURN(VoidType(), frame))
+            self.emit.printout(self.emit.emitENDMETHOD(frame))
+            frame.exitScope()
+            
+        return 0
 
     # Program
     def visitProgram(self, ast, o):
-        frame = Frame("global_frame", None)
+        frame_clinit = Frame("<clinit>", VoidType)
+        frame_init = Frame("<init>", VoidType())
+        frame_func = Frame("func", VoidType)
+        
+        evnList_clinit = SubBody(frame_clinit, [])
+        evnList_init = SubBody(frame_init, [])
+        # evnList in global = [[global_env]]
+        # evnList in function = [[global_env], [local_env1], [local_env2], ...]
+        evnList_func = SubBody(frame_func, [[decl for decl in ast.decls]])
+        
         self.emit = Emitter(self.path + "/" + "MT22Class" +  ".j")
         
         self.emit.printout(self.emit.emitPROLOG("MT22Class", "java.lang.Object"))
         
-        self.emit.printout(self.emit.emitMETHOD("main", MType([ArrayType(0, StringType())], VoidType()), True, frame))
-        
-        frame.enterScope(True)
-        
-        global_evn = SubBody(frame, [])
+        # Static field (Global variables)
         for decl in ast.decls:
-            global_evn.sym += [self.visit(decl, global_evn)]
+            if type(decl) == VarDecl:
+                self.emit.printout(self.emit.emitSTATICFIELD(decl.name, decl.typ, False))
         
-        self.emit.printout(self.emit.emitLABEL(frame.getStartLabel(), frame))
-        
+        # Static initializer
+        self.emit.printout(self.emit.emitMETHOD("<clinit>", MType([], VoidType()), False, frame_clinit))
+        frame_clinit.enterScope(True)
+        self.emit.printout(self.emit.emitLABEL(frame_clinit.getStartLabel(), frame_clinit))
         for decl in ast.decls:
-            if type(decl) == VarDecl and decl.init:
-                self.visit(AssignStmt(Id(decl.name), decl.init), global_evn)
+            if type(decl) == VarDecl:
+                if decl.init:
+                    initValue, initType = self.visit(decl.init, evnList_clinit)
+                    if type(decl.typ) == FloatType and type(initType) == IntegerType:
+                        self.emit.printout(self.emit.emitI2F())
+                    self.emit.printout(self.emit.emitPUTSTATIC(f"MT22Class/{decl.name}", decl.typ, frame_clinit))
+                else:
+                    pass
+        self.emit.printout(self.emit.emitLABEL(frame_clinit.getEndLabel(), frame_clinit))
+        self.emit.printout(self.emit.emitRETURN(VoidType(), frame_clinit))
+        self.emit.printout(self.emit.emitENDMETHOD(frame_clinit))
+        frame_clinit.exitScope()
         
-        self.emit.printout(self.emit.emitLABEL(frame.getEndLabel(), frame))
+        # Default constructor
+        self.emit.printout(self.emit.emitMETHOD("<init>", MType([], VoidType()), False, frame_init))
+        frame_init.enterScope(True)
+        self.emit.printout(self.emit.emitVAR(frame_init.getNewIndex(), "this", "LMT22Class;", frame_init.getStartLabel(), frame_init.getEndLabel(), frame_init))
+        self.emit.printout(self.emit.emitLABEL(frame_init.getStartLabel(), frame_init))
+        self.emit.printout(self.emit.emitREADVAR("this", "LMT22Class;", 0, frame_init))
+        self.emit.printout(self.emit.emitINVOKESPECIAL(frame_init))
+        self.emit.printout(self.emit.emitLABEL(frame_init.getEndLabel(), frame_init))
+        self.emit.printout(self.emit.emitRETURN(VoidType(), frame_init))
+        self.emit.printout(self.emit.emitENDMETHOD(frame_init))
+        frame_init.exitScope()
         
-        self.emit.printout(self.emit.emitRETURN(VoidType(), frame))
+        # Other functions
+        for decl in ast.decls:
+            if type(decl) != VarDecl:
+                evnList_func.sym[0] += [self.visit(decl, evnList_func)]
         
-        self.emit.printout(self.emit.emitENDMETHOD(frame))
-        
-        frame.exitScope()
-            
         self.emit.emitEPILOG()

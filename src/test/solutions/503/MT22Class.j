@@ -1,12 +1,15 @@
 .source MT22Class.java
 .class public MT22Class
 .super java.lang.Object
+.field static a I
 
 .method public <clinit>()V
 Label0:
+	iconst_2
+	putstatic MT22Class/a I
 Label1:
 	return
-.limit stack 0
+.limit stack 1
 .limit locals 0
 .end method
 
