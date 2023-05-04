@@ -60,6 +60,7 @@ class Emitter():
         # frame: Frame
 
         frame.push()
+        
         if type(in_) is int:
             i = in_
             if i >= -1 and i <= 5:
@@ -99,7 +100,7 @@ class Emitter():
     def emitALOAD(self, in_, frame):
         # in_: Type
         # frame: Frame
-        # ..., arrayref, index, value -> ...
+        # ..., arrayref, index -> ...
 
         frame.pop()
         if type(in_) is IntegerType:
@@ -109,6 +110,8 @@ class Emitter():
         elif type(in_) is BooleanType:
             return self.jvm.emitIALOAD()
         elif type(in_) is StringType:
+            return self.jvm.emitAALOAD()
+        elif type(in_) is ArrayType:
             return self.jvm.emitAALOAD()
 
     def emitASTORE(self, in_, frame):
@@ -126,6 +129,8 @@ class Emitter():
         elif type(in_) is BooleanType:
             return self.jvm.emitIASTORE()
         elif type(in_) is StringType:
+            return self.jvm.emitAASTORE()
+        elif type(in_) is ArrayType:
             return self.jvm.emitAASTORE()
 
     '''    generate the var directive for a local variable.
@@ -526,17 +531,19 @@ class Emitter():
     *   @param index the index of the local variable.
     *   @param in the type of the local array variable.
     '''
-
-    def emitNEWARRAY(self, type):
-        buffer = list()
-        buffer.append(self.jvm.emitNEWARRAY(self.getFullType(type)))
-        return ''.join(buffer)
     
-    def emitANEWARRAY(self, type):
+    def emitANEWARRAY(self, typ, dim):
         buffer = list()
-        bracket = "["
-        # TODO Array
-        buffer.append(self.jvm.emitANEWARRAY(bracket + self.getJVMType(type)))
+        bracket = ""
+        for i in range(0, dim - 1):
+            bracket += "["
+        if bracket == "":
+            if type(typ.typ) == StringType:
+                buffer.append(self.jvm.emitANEWARRAY(self.getFullType(typ.typ)))
+            else:
+                buffer.append(self.jvm.emitNEWARRAY(self.getFullType(typ.typ)))
+        else:
+            buffer.append(self.jvm.emitANEWARRAY(bracket + self.getJVMType(typ.typ)))
         return ''.join(buffer)
 
     '''   generate code to initialize local array variables.

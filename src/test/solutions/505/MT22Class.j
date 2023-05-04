@@ -1,13 +1,13 @@
 .source MT22Class.java
 .class public MT22Class
 .super java.lang.Object
-.field static a [I
+.field static a [Ljava/lang/String;
 
 .method public <clinit>()V
 Label0:
 	iconst_2
-	newarray int
-	putstatic MT22Class/a [I
+	anewarray java/lang/String
+	putstatic MT22Class/a [Ljava/lang/String;
 Label1:
 	return
 .limit stack 1

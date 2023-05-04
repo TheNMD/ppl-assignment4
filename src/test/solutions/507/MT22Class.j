@@ -1,31 +1,73 @@
 .source MT22Class.java
 .class public MT22Class
 .super java.lang.Object
-.field static a [[I
+.field static a [[[I
 
 .method public <clinit>()V
 Label0:
 	iconst_3
-	anewarray [I
-	putstatic MT22Class/a [[I
-	getstatic MT22Class/a [[I
+	anewarray [[I
+	putstatic MT22Class/a [[[I
+	getstatic MT22Class/a [[[I
 	iconst_0
 	iconst_3
+	anewarray [I
+	aastore
+	getstatic MT22Class/a [[[I
+	iconst_0
+	aaload
+	dup
+	iconst_0
+	iconst_2
 	newarray int
 	aastore
-	getstatic MT22Class/a [[I
+	dup
+	iconst_1
+	iconst_2
+	newarray int
+	aastore
+	pop
+	getstatic MT22Class/a [[[I
 	iconst_1
 	iconst_3
+	anewarray [I
+	aastore
+	getstatic MT22Class/a [[[I
+	iconst_1
+	aaload
+	dup
+	iconst_0
+	iconst_2
 	newarray int
 	aastore
-	getstatic MT22Class/a [[I
+	dup
+	iconst_1
+	iconst_2
+	newarray int
+	aastore
+	pop
+	getstatic MT22Class/a [[[I
 	iconst_2
 	iconst_3
+	anewarray [I
+	aastore
+	getstatic MT22Class/a [[[I
+	iconst_2
+	aaload
+	dup
+	iconst_0
+	iconst_2
 	newarray int
 	aastore
+	dup
+	iconst_1
+	iconst_2
+	newarray int
+	aastore
+	pop
 Label1:
 	return
-.limit stack 3
+.limit stack 4
 .limit locals 0
 .end method
 

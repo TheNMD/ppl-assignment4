@@ -210,6 +210,35 @@ class CodeGenVisitor(Visitor):
 
     # Program
     def visitProgram(self, ast, o):
+        def arrayTraversal(name, typ, dim, frame):
+            if len(dim) == 1:
+                for i in range(int(dim[0])):
+                    self.emit.printout(self.emit.emitDUP(frame))
+                    
+                    self.emit.printout(self.emit.emitPUSHICONST(i, frame))
+                    self.emit.printout(self.emit.emitPUSHICONST(int(dim[0]), frame))
+                    self.emit.printout(self.emit.emitANEWARRAY(typ, len(dim)))
+                    self.emit.printout(self.emit.emitASTORE(typ, frame))
+                    
+                    if i == int(dim[0]) - 1:
+                        self.emit.printout(self.emit.emitPOP(frame))
+            else:
+                for i in range(int(dim[0])):
+                    self.emit.printout(self.emit.emitDUP(frame))
+
+                    self.emit.printout(self.emit.emitPUSHICONST(i, frame))
+                    self.emit.printout(self.emit.emitPUSHICONST(int(dim[0]), frame))
+                    self.emit.printout(self.emit.emitANEWARRAY(typ, len(dim)))
+                    self.emit.printout(self.emit.emitASTORE(typ, frame))
+
+                    self.emit.printout(self.emit.emitDUP(frame))
+                    self.emit.printout(self.emit.emitPUSHICONST(i, frame))
+                    self.emit.printout(self.emit.emitALOAD(typ, frame))
+                    arrayTraversal(name, typ, dim[1:], frame)
+                    
+                    if i == int(dim[0]) - 1:
+                        self.emit.printout(self.emit.emitPOP(frame))
+                    
         frame_clinit = Frame("<clinit>", VoidType)
         frame_init = Frame("<init>", VoidType())
         frame_func = Frame("func", VoidType)
@@ -237,9 +266,31 @@ class CodeGenVisitor(Visitor):
             if type(decl) == VarDecl:
                 if decl.init:
                     initValue, initType = self.visit(decl.init, evnList_clinit)
-                    if type(decl.typ) == FloatType and type(initType) == IntegerType:
-                        self.emit.printout(self.emit.emitI2F(frame_clinit))
-                    self.emit.printout(self.emit.emitPUTSTATIC(f"MT22Class/{decl.name}", decl.typ, frame_clinit))
+                    if type(decl.typ) != ArrayType:
+                        if type(decl.typ) == FloatType and type(initType) == IntegerType:
+                            self.emit.printout(self.emit.emitI2F(frame_clinit))
+                        self.emit.printout(self.emit.emitPUTSTATIC(f"MT22Class/{decl.name}", decl.typ, frame_clinit))
+                    else:
+                        if len(decl.typ.dimensions) == 1:
+                            self.emit.printout(self.emit.emitPUSHICONST(int(decl.typ.dimensions[0]), frame_clinit))
+                            self.emit.printout(self.emit.emitANEWARRAY(decl.typ, len(decl.typ.dimensions)))
+                            self.emit.printout(self.emit.emitPUTSTATIC(f"MT22Class/{decl.name}", decl.typ, frame_clinit))
+                        else:
+                            self.emit.printout(self.emit.emitPUSHICONST(int(decl.typ.dimensions[0]), frame_clinit))
+                            self.emit.printout(self.emit.emitANEWARRAY(decl.typ, len(decl.typ.dimensions)))
+                            self.emit.printout(self.emit.emitPUTSTATIC(f"MT22Class/{decl.name}", decl.typ, frame_clinit))
+                            for i in range(int(decl.typ.dimensions[0])):
+                                self.emit.printout(self.emit.emitGETSTATIC(f"MT22Class/{decl.name}", decl.typ, frame_clinit))
+                                self.emit.printout(self.emit.emitPUSHICONST(i, frame_clinit))
+                                self.emit.printout(self.emit.emitPUSHICONST(int(decl.typ.dimensions[0]), frame_clinit))
+                                self.emit.printout(self.emit.emitANEWARRAY(decl.typ, len(decl.typ.dimensions) - 1))
+                                self.emit.printout(self.emit.emitASTORE(decl.typ, frame_clinit))
+
+                                if len(decl.typ.dimensions) > 2:
+                                    self.emit.printout(self.emit.emitGETSTATIC(f"MT22Class/{decl.name}", decl.typ, frame_clinit))
+                                    self.emit.printout(self.emit.emitPUSHICONST(i, frame_clinit))
+                                    self.emit.printout(self.emit.emitALOAD(decl.typ, frame_clinit))
+                            
                 else:
                     if type(decl.typ) == IntegerType:
                         initValue, initType = self.visit(IntegerLit(0), evnList_clinit)
@@ -257,13 +308,25 @@ class CodeGenVisitor(Visitor):
                     elif type(decl.typ) == ArrayType:
                         if len(decl.typ.dimensions) == 1:
                             self.emit.printout(self.emit.emitPUSHICONST(int(decl.typ.dimensions[0]), frame_clinit))
-                            self.emit.printout(self.emit.emitNEWARRAY(decl.typ.typ))
+                            self.emit.printout(self.emit.emitANEWARRAY(decl.typ, len(decl.typ.dimensions)))
                             self.emit.printout(self.emit.emitPUTSTATIC(f"MT22Class/{decl.name}", decl.typ, frame_clinit))
                         else:
-                            # TODO Array
                             self.emit.printout(self.emit.emitPUSHICONST(int(decl.typ.dimensions[0]), frame_clinit))
-                            self.emit.printout(self.emit.emitANEWARRAY(decl.typ.typ))
+                            self.emit.printout(self.emit.emitANEWARRAY(decl.typ, len(decl.typ.dimensions)))
                             self.emit.printout(self.emit.emitPUTSTATIC(f"MT22Class/{decl.name}", decl.typ, frame_clinit))
+                            for i in range(int(decl.typ.dimensions[0])):
+                                self.emit.printout(self.emit.emitGETSTATIC(f"MT22Class/{decl.name}", decl.typ, frame_clinit))
+                                self.emit.printout(self.emit.emitPUSHICONST(i, frame_clinit))
+                                self.emit.printout(self.emit.emitPUSHICONST(int(decl.typ.dimensions[0]), frame_clinit))
+                                self.emit.printout(self.emit.emitANEWARRAY(decl.typ, len(decl.typ.dimensions) - 1))
+                                self.emit.printout(self.emit.emitASTORE(decl.typ, frame_clinit))
+
+                                if len(decl.typ.dimensions) > 2:
+                                    self.emit.printout(self.emit.emitGETSTATIC(f"MT22Class/{decl.name}", decl.typ, frame_clinit))
+                                    self.emit.printout(self.emit.emitPUSHICONST(i, frame_clinit))
+                                    self.emit.printout(self.emit.emitALOAD(decl.typ, frame_clinit))
+                                    arrayTraversal(decl.name, decl.typ, decl.typ.dimensions[2:], frame_clinit)
+                                    
         self.emit.printout(self.emit.emitLABEL(frame_clinit.getEndLabel(), frame_clinit))
         self.emit.printout(self.emit.emitRETURN(VoidType(), frame_clinit))
         self.emit.printout(self.emit.emitENDMETHOD(frame_clinit))
