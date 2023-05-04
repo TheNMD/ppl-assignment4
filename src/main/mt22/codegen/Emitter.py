@@ -522,11 +522,6 @@ class Emitter():
         buffer.append(self.jvm.emitENDMETHOD())
         return ''.join(buffer)
 
-    def getConst(self, ast):
-        # ast: Literal
-        if type(ast) is IntegerLit:
-            return (str(ast.value), IntegerType())
-
     '''   generate code to initialize a local array variable.<p>
     *   @param index the index of the local variable.
     *   @param in the type of the local array variable.

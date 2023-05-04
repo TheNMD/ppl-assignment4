@@ -63,9 +63,21 @@ class CheckCodeGenSuite(unittest.TestCase):
                    main : function void () {} """
         expect = ""
         self.assertTrue(TestCodeGen.test(input, expect, 508))
-        
+    
     def test9(self):
-        input = """a : array [3, 2] of string = {{1, 2}, {3, 4}, {5, 6}} ;   
+        input = """a : array [3] of float = {1.0, 2.0, 3.0} ;   
                    main : function void () {} """
         expect = ""
         self.assertTrue(TestCodeGen.test(input, expect, 509))
+        
+    def test10(self):
+        input = """a : array [3, 2] of float = {{1.1, 2.0}, {3.0, 4.0}, {5.0, 6.0}} ;   
+                   main : function void () {} """
+        expect = ""
+        self.assertTrue(TestCodeGen.test(input, expect, 510))
+        
+    def test11(self):
+        input = """a : array [3, 2, 2] of string = {{{"1.0", "2.0"}, {"3.0", "4.0"}}, {{"5.0", "6.0"}, {"7.0", "8.0"}}, {{"9.0", "10.0"}, {"11.0", "12.0"}}} ;   
+                   main : function void () {} """
+        expect = ""
+        self.assertTrue(TestCodeGen.test(input, expect, 511))

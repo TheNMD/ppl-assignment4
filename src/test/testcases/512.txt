@@ -1,0 +1,2 @@
+a : array [3, 2, 2, 2, 2, 2, 2, 2, 2, 2] of string ;   
+                   main : function void () {} 
