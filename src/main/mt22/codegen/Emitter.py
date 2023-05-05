@@ -454,12 +454,6 @@ class Emitter():
                 result.append(self.jvm.emitIFLE(labelF))
             elif op == ">=":
                 result.append(self.jvm.emitIFLT(labelF))
-            result.append(self.emitPUSHICONST(1, frame))
-            frame.pop()
-            result.append(self.emitGOTO(labelO, frame))
-            result.append(self.emitLABEL(labelF, frame))
-            result.append(self.emitPUSHICONST(0, frame))
-            result.append(self.emitLABEL(labelO, frame))
         else:
             if op == "==":
                 result.append(self.jvm.emitIFICMPNE(labelF))
@@ -473,12 +467,13 @@ class Emitter():
                 result.append(self.jvm.emitIFICMPLE(labelF))
             elif op == ">=":
                 result.append(self.jvm.emitIFICMPLT(labelF))
-            result.append(self.emitPUSHICONST(1, frame))
-            frame.pop()
-            result.append(self.emitGOTO(labelO, frame))
-            result.append(self.emitLABEL(labelF, frame))
-            result.append(self.emitPUSHICONST(0, frame))
-            result.append(self.emitLABEL(labelO, frame))
+                
+        result.append(self.emitPUSHICONST(1, frame))
+        frame.pop()
+        result.append(self.emitGOTO(labelO, frame))
+        result.append(self.emitLABEL(labelF, frame))
+        result.append(self.emitPUSHICONST(0, frame))
+        result.append(self.emitLABEL(labelO, frame))
         return ''.join(result)
 
     def emitRELOP(self, op, in_, trueLabel, falseLabel, frame):
