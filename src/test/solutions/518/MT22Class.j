@@ -1,30 +1,42 @@
 .source MT22Class.java
 .class public MT22Class
 .super java.lang.Object
-.field static a [I
-.field static b F
+.field static a F
 
 .method public <clinit>()V
 Label0:
-	iconst_2
-	newarray int
-	putstatic MT22Class/a [I
-	getstatic MT22Class/a [I
-	iconst_0
 	iconst_1
-	iastore
-	getstatic MT22Class/a [I
-	iconst_1
-	iconst_2
-	iastore
-	getstatic MT22Class/a [I
-	iconst_1
-	iaload
+	ldc 2.2
+	iconst_3
 	i2f
-	putstatic MT22Class/b F
+	fsub
+	iconst_4
+	bipush 6
+	imul
+	i2f
+	fadd
+	bipush 12
+	i2f
+	fdiv
+	pop
+	i2f
+	ldc 2.2
+	iconst_3
+	i2f
+	fsub
+	iconst_4
+	bipush 6
+	imul
+	i2f
+	fadd
+	bipush 12
+	i2f
+	fdiv
+	fadd
+	putstatic MT22Class/a F
 Label1:
 	return
-.limit stack 3
+.limit stack 4
 .limit locals 0
 .end method
 

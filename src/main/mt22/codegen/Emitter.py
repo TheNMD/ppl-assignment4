@@ -101,14 +101,13 @@ class Emitter():
         # in_: Type
         # frame: Frame
         # ..., arrayref, index -> ...
-
         frame.pop()
         if type(in_) is IntegerType:
             return self.jvm.emitIALOAD()
         elif type(in_) is FloatType:
             return self.jvm.emitFALOAD()
         elif type(in_) is BooleanType:
-            return self.jvm.emitIALOAD()
+            return self.jvm.emitBALOAD()
         elif type(in_) is StringType:
             return self.jvm.emitAALOAD()
         elif type(in_) is ArrayType:
@@ -127,7 +126,7 @@ class Emitter():
         elif type(in_) is FloatType:
             return self.jvm.emitFASTORE()
         elif type(in_) is BooleanType:
-            return self.jvm.emitIASTORE()
+            return self.jvm.emitBASTORE()
         elif type(in_) is StringType:
             return self.jvm.emitAASTORE()
         elif type(in_) is ArrayType:
@@ -179,15 +178,15 @@ class Emitter():
     *
     '''
 
-    def emitREADVAR2(self, name, typ, frame):
-        # name: String
-        # typ: Type
-        # frame: Frame
-        # ... -> ..., value
+    # def emitREADVAR2(self, name, typ, frame):
+    #     # name: String
+    #     # typ: Type
+    #     # frame: Frame
+    #     # ... -> ..., value
 
-        # TODO
-        # frame.push()
-        raise IllegalOperandException(name)
+    #     # TODO
+    #     # frame.push()
+    #     raise IllegalOperandException(name)
 
     '''
     *   generate code to pop a value on top of the operand stack and store it to a block-scoped variable.
@@ -218,15 +217,15 @@ class Emitter():
     *
     '''
 
-    def emitWRITEVAR2(self, name, typ, frame):
-        # name: String
-        # typ: Type
-        # frame: Frame
-        # ..., value -> ...
+    # def emitWRITEVAR2(self, name, typ, frame):
+    #     # name: String
+    #     # typ: Type
+    #     # frame: Frame
+    #     # ..., value -> ...
         
-        # TODO
-        # frame.push()
-        raise IllegalOperandException(name)
+    #     # TODO
+    #     # frame.push()
+    #     raise IllegalOperandException(name)
 
     ''' generate the field (static) directive for a class mutable or immutable attribute.
     *   @param lexeme the name of the attribute.
@@ -404,15 +403,8 @@ class Emitter():
             elif type(in_) is FloatType:
                 return self.jvm.emitFDIV()
 
-    def emitDIV(self, frame):
-        # frame: Frame
-
-        frame.pop()
-        return self.jvm.emitIDIV()
-
     def emitMOD(self, frame):
         # frame: Frame
-
         frame.pop()
         return self.jvm.emitIREM()
 
@@ -460,11 +452,11 @@ class Emitter():
             result.append(self.jvm.emitIFICMPEQ(labelF))
         elif op == "==":
             result.append(self.jvm.emitIFICMPNE(labelF))
-        result.append(self.emitPUSHCONST("1", IntegerType(), frame))
+        result.append(self.emitPUSHICONST(1, frame))
         frame.pop()
         result.append(self.emitGOTO(labelO, frame))
         result.append(self.emitLABEL(labelF, frame))
-        result.append(self.emitPUSHCONST("0", IntegerType(), frame))
+        result.append(self.emitPUSHICONST(0, frame))
         result.append(self.emitLABEL(labelO, frame))
         return ''.join(result)
 

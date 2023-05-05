@@ -98,7 +98,48 @@ class CodeGenVisitor(Visitor):
     def visitVoidType(self, ast, o): pass
     
     # Literals
-    def visitBinExpr(self, ast, o): pass
+    def visitBinExpr(self, ast, o):
+        op = str(ast.op)
+        left = ast.left
+        right = ast.right
+        frame = o.frame
+        
+        leftValue, leftType = self.visit(left, o)
+        rightValue, rightType = self.visit(right, o)
+        
+        if type(leftType) == FloatType and type(rightType) == IntegerType:
+            typ = FloatType()
+            self.emit.printout(self.emit.emitI2F(frame))
+        elif type(leftType) == IntegerType and type(rightType) == FloatType:
+            typ = FloatType()
+            self.emit.printout(self.emit.emitPOP(frame))
+            self.emit.printout(self.emit.emitI2F(frame))
+            self.visit(right, o)
+        elif op == "/":
+            typ = FloatType()
+            if type(leftType) == IntegerType:
+                self.emit.printout(self.emit.emitPOP(frame))
+                self.emit.printout(self.emit.emitI2F(frame))
+                self.visit(right, o)
+            if type(rightType) == IntegerType:
+                self.emit.printout(self.emit.emitI2F(frame))
+        else:
+            typ = leftType
+            
+        if op == "+" or op == "-":
+            return self.emit.printout(self.emit.emitADDOP(op, typ, frame)), typ
+        elif op == "*" or op == "/":
+            return self.emit.printout(self.emit.emitMULOP(op, typ, frame)), typ
+        elif op == "%":
+            return self.emit.printout(self.emit.emitMOD(frame)), typ
+        elif op == "&&":
+            return self.emit.printout(self.emit.emitANDOP(frame)), typ
+        elif op == "||":
+            return self.emit.printout(self.emit.emitOROP(frame)), typ
+        elif op == "==" or op == "!=" or op == "<" or op == ">" or op == "<=" or op == ">=":
+            return self.emit.printout(self.emit.emitREOP(op, typ, frame)), typ
+        elif op == "::":
+            pass
     
     def visitUnExpr(self, ast, o): pass
     
@@ -131,16 +172,17 @@ class CodeGenVisitor(Visitor):
                 if i == 0:
                     if sym[i][j].name == name:
                         self.emit.printout(self.emit.emitGETSTATIC(f"MT22Class/{sym[i][j].name}", sym[i][j].typ, frame))
-                        for ele in cell:
-                            self.visit(ele, o)
-                            self.emit.printout(self.emit.emitALOAD(sym[i][j].typ, frame))
-                        return sym[i][j].name, sym[i][j].typ
+                        for k in range(len(cell)):
+                            cellValue, cellType = self.visit(cell[k], o)
+                            # TODO So sanh xem cellValue co phai la integer va co vuot upper bound hay lower bound ko
+                            if k == len(cell) - 1:
+                                self.emit.printout(self.emit.emitALOAD(sym[i][j].typ.typ, frame))
+                            else:
+                                self.emit.printout(self.emit.emitALOAD(sym[i][j].typ, frame))
+                        return sym[i][j].name, sym[i][j].typ.typ
                 else: 
                     pass
                     # TODO khi o trong function
-                    # if sym[i][j].name == name:
-                    #     self.emit.printout(self.emit.emitREADVAR(sym[i][j].name, sym[i][j].typ, frame.getNewIndex(), frame))
-                    #     return sym[i][j].name, sym[i][j].typ
     
     def visitIntegerLit(self, ast, o):
         frame = o.frame

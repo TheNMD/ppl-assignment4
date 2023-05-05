@@ -1,27 +1,39 @@
 .source MT22Class.java
 .class public MT22Class
 .super java.lang.Object
-.field static a [I
-.field static b F
+.field static a Z
+.field static b Z
+.field static c Z
 
 .method public <clinit>()V
 Label0:
-	iconst_2
-	newarray int
-	putstatic MT22Class/a [I
-	getstatic MT22Class/a [I
 	iconst_0
+	putstatic MT22Class/a Z
 	iconst_1
-	iastore
-	getstatic MT22Class/a [I
+	putstatic MT22Class/b Z
+	getstatic MT22Class/a Z
+	getstatic MT22Class/b Z
+	if_icmpeq Label2
 	iconst_1
-	iconst_2
-	iastore
-	getstatic MT22Class/a [I
+	goto Label3
+Label2:
+	iconst_0
+Label3:
+	getstatic MT22Class/a Z
+	getstatic MT22Class/b Z
+	if_icmpne Label4
 	iconst_1
-	iaload
-	i2f
-	putstatic MT22Class/b F
+	goto Label5
+Label4:
+	iconst_0
+Label5:
+	if_icmpne Label6
+	iconst_1
+	goto Label7
+Label6:
+	iconst_0
+Label7:
+	putstatic MT22Class/c Z
 Label1:
 	return
 .limit stack 3

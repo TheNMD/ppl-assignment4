@@ -1,0 +1,2 @@
+a : array [2, 2] of boolean = {{true, false}, {false, true}} ; b : boolean = a[0, 1] ;   
+                   main : function void () {} 

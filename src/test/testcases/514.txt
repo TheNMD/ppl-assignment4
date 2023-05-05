@@ -1,0 +1,2 @@
+a : array [2, 2, 2] of string = {{{"true", "false"}, {"false", "true"}}, {{"false", "true"}, {"true", "false"}}} ; b : string = a[0, 0, 0] ;   
+                   main : function void () {} 

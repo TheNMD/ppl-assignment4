@@ -1,0 +1,4 @@
+a : integer = 8 ;
+                   b : integer = 3 ;
+                   c : float = a % b ;  
+                   main : function void () {} 

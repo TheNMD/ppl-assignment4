@@ -1,0 +1,5 @@
+a : boolean = false ;
+                   b : boolean = true ;
+                   c : boolean = (a != b) == (a == b) ;
+                     
+                   main : function void () {} 
