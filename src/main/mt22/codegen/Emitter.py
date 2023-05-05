@@ -440,24 +440,45 @@ class Emitter():
 
         frame.pop()
         frame.pop()
-        if op == ">":
-            result.append(self.jvm.emitIFICMPLE(labelF))
-        elif op == ">=":
-            result.append(self.jvm.emitIFICMPLT(labelF))
-        elif op == "<":
-            result.append(self.jvm.emitIFICMPGE(labelF))
-        elif op == "<=":
-            result.append(self.jvm.emitIFICMPGT(labelF))
-        elif op == "!=":
-            result.append(self.jvm.emitIFICMPEQ(labelF))
-        elif op == "==":
-            result.append(self.jvm.emitIFICMPNE(labelF))
-        result.append(self.emitPUSHICONST(1, frame))
-        frame.pop()
-        result.append(self.emitGOTO(labelO, frame))
-        result.append(self.emitLABEL(labelF, frame))
-        result.append(self.emitPUSHICONST(0, frame))
-        result.append(self.emitLABEL(labelO, frame))
+        if type(in_) == FloatType:
+            result.append(self.jvm.emitFCMPL())
+            if op == "==":
+                result.append(self.jvm.emitIFNE(labelF))
+            elif op == "!=":
+                result.append(self.jvm.emitIFEQ(labelF))
+            elif op == "<":
+                result.append(self.jvm.emitIFGE(labelF))
+            elif op == "<=":
+                result.append(self.jvm.emitIFGT(labelF))
+            elif op == ">":
+                result.append(self.jvm.emitIFLE(labelF))
+            elif op == ">=":
+                result.append(self.jvm.emitIFLT(labelF))
+            result.append(self.emitPUSHICONST(1, frame))
+            frame.pop()
+            result.append(self.emitGOTO(labelO, frame))
+            result.append(self.emitLABEL(labelF, frame))
+            result.append(self.emitPUSHICONST(0, frame))
+            result.append(self.emitLABEL(labelO, frame))
+        else:
+            if op == "==":
+                result.append(self.jvm.emitIFICMPNE(labelF))
+            elif op == "!=":
+                result.append(self.jvm.emitIFICMPEQ(labelF))
+            elif op == "<":
+                result.append(self.jvm.emitIFICMPGE(labelF))
+            elif op == "<=":
+                result.append(self.jvm.emitIFICMPGT(labelF))
+            elif op == ">":
+                result.append(self.jvm.emitIFICMPLE(labelF))
+            elif op == ">=":
+                result.append(self.jvm.emitIFICMPLT(labelF))
+            result.append(self.emitPUSHICONST(1, frame))
+            frame.pop()
+            result.append(self.emitGOTO(labelO, frame))
+            result.append(self.emitLABEL(labelF, frame))
+            result.append(self.emitPUSHICONST(0, frame))
+            result.append(self.emitLABEL(labelO, frame))
         return ''.join(result)
 
     def emitRELOP(self, op, in_, trueLabel, falseLabel, frame):

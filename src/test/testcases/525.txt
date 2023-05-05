@@ -1,0 +1,4 @@
+a : float = 2 ;
+                   b : integer = 3 ;
+                   c : boolean = a > b ;
+                   main : function void () {} 

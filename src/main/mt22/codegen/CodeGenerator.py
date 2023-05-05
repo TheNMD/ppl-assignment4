@@ -137,6 +137,7 @@ class CodeGenVisitor(Visitor):
         elif op == "||":
             return self.emit.printout(self.emit.emitOROP(frame)), typ
         elif op == "==" or op == "!=" or op == "<" or op == ">" or op == "<=" or op == ">=":
+            # TODO REOP cho float
             return self.emit.printout(self.emit.emitREOP(op, typ, frame)), typ
         elif op == "::":
             pass

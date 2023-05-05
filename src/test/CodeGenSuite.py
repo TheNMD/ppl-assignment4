@@ -100,68 +100,82 @@ class CheckCodeGenSuite(unittest.TestCase):
     #     expect = ""
     #     self.assertTrue(TestCodeGen.test(input, expect, 514))
     
-    def test15(self):
-        input = """a : integer = 1 - (4 - (2 + 3)) ;   
-                   main : function void () {} """
-        expect = ""
-        self.assertTrue(TestCodeGen.test(input, expect, 515))
+    # def test15(self):
+    #     input = """a : integer = 1 - (4 - (2 + 3)) ;   
+    #                main : function void () {} """
+    #     expect = ""
+    #     self.assertTrue(TestCodeGen.test(input, expect, 515))
         
-    def test16(self):
-        input = """a : float = 1.1 + 2 ;   
-                   main : function void () {} """
-        expect = ""
-        self.assertTrue(TestCodeGen.test(input, expect, 516))
+    # def test16(self):
+    #     input = """a : float = 1.1 + 2 ;   
+    #                main : function void () {} """
+    #     expect = ""
+    #     self.assertTrue(TestCodeGen.test(input, expect, 516))
         
-    def test17(self):
-        input = """a : float = 1 + 2.2 ;   
-                   main : function void () {} """
-        expect = ""
-        self.assertTrue(TestCodeGen.test(input, expect, 517))
+    # def test17(self):
+    #     input = """a : float = 1 + 2.2 ;   
+    #                main : function void () {} """
+    #     expect = ""
+    #     self.assertTrue(TestCodeGen.test(input, expect, 517))
         
-    def test18(self):
-        input = """a : float = 1 + (2.2 - 3 + 4 * 6) / 12 ;   
-                   main : function void () {} """
-        expect = ""
-        self.assertTrue(TestCodeGen.test(input, expect, 518))
+    # def test18(self):
+    #     input = """a : float = 1 + (2.2 - 3 + 4 * 6) / 12 ;   
+    #                main : function void () {} """
+    #     expect = ""
+    #     self.assertTrue(TestCodeGen.test(input, expect, 518))
         
-    def test19(self):
-        input = """a : float = 2.1 ;
+    # def test19(self):
+    #     input = """a : float = 2.1 ;
+    #                b : integer = 3 ;
+    #                c : float = a - (b * a) / (a + b) ;  
+    #                main : function void () {} """
+    #     expect = ""
+    #     self.assertTrue(TestCodeGen.test(input, expect, 519))
+        
+    # def test20(self):
+    #     input = """a : integer = 8 ;
+    #                b : integer = 3 ;
+    #                c : float = a % b ;  
+    #                main : function void () {} """
+    #     expect = ""
+    #     self.assertTrue(TestCodeGen.test(input, expect, 520))
+        
+    # def test21(self):
+    #     input = """a : float = 8.3 ;
+    #                b : integer = 3 ;
+    #                c : float = a / b ;  
+    #                main : function void () {} """
+    #     expect = ""
+    #     self.assertTrue(TestCodeGen.test(input, expect, 521))
+        
+    # def test22(self):
+    #     input = """a : boolean = true ;
+    #                b : boolean = false ;
+    #                c : boolean = (a && b || true ) && (true || b) ;
+    #                main : function void () {} """
+    #     expect = ""
+    #     self.assertTrue(TestCodeGen.test(input, expect, 522))
+        
+    # def test23(self):
+    #     input = """a : boolean = false ;
+    #                b : boolean = true ;
+    #                c : boolean = (a != b) == (a == b) ;
+    #                main : function void () {} """
+    #     expect = ""
+    #     self.assertTrue(TestCodeGen.test(input, expect, 523))
+        
+    # def test24(self):
+    #     input = """a : integer = 2 ;
+    #                b : integer = 3 ;
+    #                c : boolean = a != b ;
+    #                main : function void () {} """
+    #     expect = ""
+    #     self.assertTrue(TestCodeGen.test(input, expect, 524))
+        
+    def test25(self):
+        input = """a : float = 2 ;
                    b : integer = 3 ;
-                   c : float = a - (b * a) / (a + b) ;  
+                   c : boolean = a > b ;
                    main : function void () {} """
         expect = ""
-        self.assertTrue(TestCodeGen.test(input, expect, 519))
-        
-    def test20(self):
-        input = """a : integer = 8 ;
-                   b : integer = 3 ;
-                   c : float = a % b ;  
-                   main : function void () {} """
-        expect = ""
-        self.assertTrue(TestCodeGen.test(input, expect, 520))
-        
-    def test21(self):
-        input = """a : float = 8.3 ;
-                   b : integer = 3 ;
-                   c : float = a / b ;  
-                   main : function void () {} """
-        expect = ""
-        self.assertTrue(TestCodeGen.test(input, expect, 521))
-        
-    def test22(self):
-        input = """a : boolean = true ;
-                   b : boolean = false ;
-                   c : boolean = (a && b || true ) && (true || b) ;
-                     
-                   main : function void () {} """
-        expect = ""
-        self.assertTrue(TestCodeGen.test(input, expect, 522))
-        
-    def test23(self):
-        input = """a : boolean = false ;
-                   b : boolean = true ;
-                   c : boolean = (a != b) == (a == b) ;
-                     
-                   main : function void () {} """
-        expect = ""
-        self.assertTrue(TestCodeGen.test(input, expect, 523))
+        self.assertTrue(TestCodeGen.test(input, expect, 525))

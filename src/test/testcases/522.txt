@@ -1,5 +1,4 @@
 a : boolean = true ;
                    b : boolean = false ;
                    c : boolean = (a && b || true ) && (true || b) ;
-                     
                    main : function void () {} 
