@@ -81,3 +81,9 @@ class CheckCodeGenSuite(unittest.TestCase):
                    main : function void () {} """
         expect = ""
         self.assertTrue(TestCodeGen.test(input, expect, 511))
+        
+    def test12(self):
+        input = """a : array [2] of integer = {1, 2} ;   
+                   main : function void () {} """
+        expect = ""
+        self.assertTrue(TestCodeGen.test(input, expect, 512))

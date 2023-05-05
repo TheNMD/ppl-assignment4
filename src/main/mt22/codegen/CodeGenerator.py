@@ -28,7 +28,7 @@ class CodeGenerator:
     def __init__(self):
         self.libName = "io"
     
-    # TODO super va preventdefault
+    # TODO super va preventDefault
     def init(self):
         return [Symbol("readInteger", MType(list(), IntegerType()), CName(self.libName)),
                 Symbol("printInteger", MType([IntegerType()], VoidType()), CName(self.libName)),
@@ -196,20 +196,8 @@ class CodeGenVisitor(Visitor):
     def visitCallStmt(self, ast, o): pass
     
     # Declarations
-    def visitVarDecl(self, ast, o):
-        name = ast.name
-        typ = ast.typ
-        # init = ast.init
-        
-        # sym = o.sym
-        frame = o.frame
-        
-        idx = frame.getNewIndex()
-        # start_label = frame.getStartLabel()
-        # end_label = frame.getEndLabel()
-        # self.emit.printout(self.emit.emitVAR(idx, name, typ, start_label, end_label, frame))
-        return Symbol(name, typ, idx)
-        
+    def visitVarDecl(self, ast, o): pass # TODO emitVAR khi visit local variable trong function
+
     def visitParamDecl(self, ast, o): pass
     
     def visitFuncDecl(self, ast, o):
@@ -229,8 +217,6 @@ class CodeGenVisitor(Visitor):
             self.emit.printout(self.emit.emitRETURN(VoidType(), frame))
             self.emit.printout(self.emit.emitENDMETHOD(frame))
             frame.exitScope()
-            
-        return 0
 
     # Program
     def visitProgram(self, ast, o):
@@ -285,19 +271,23 @@ class CodeGenVisitor(Visitor):
                     
                     if i == int(dim[0]) - 1:
                         self.emit.printout(self.emit.emitPOP(frame))
-                    
+        # Emitter
+        self.emit = Emitter(self.path + "/" + "MT22Class" +  ".j")
+         
+        # Frame
         frame_clinit = Frame("<clinit>", VoidType)
         frame_init = Frame("<init>", VoidType())
         frame_func = Frame("func", VoidType)
         
+        # Environment list
+        ## evnList in global : [[global_env]]
+        ## evnList in function : [[global_env], [local_env1], [local_env2], ...]
         evnList_clinit = SubBody(frame_clinit, [[decl for decl in ast.decls]])
-        evnList_init = SubBody(frame_init, [])
-        # evnList in global = [[global_env]]
-        # evnList in function = [[global_env], [local_env1], [local_env2], ...]
+        # evnList_init = SubBody(frame_init, [])
         evnList_func = SubBody(frame_func, [[decl for decl in ast.decls]])
         
-        self.emit = Emitter(self.path + "/" + "MT22Class" +  ".j")
         
+        # Class declaration
         self.emit.printout(self.emit.emitPROLOG("MT22Class", "java.lang.Object"))
         
         # Static field (Global variables)
@@ -309,7 +299,7 @@ class CodeGenVisitor(Visitor):
         self.emit.printout(self.emit.emitMETHOD("<clinit>", MType([], VoidType()), False, frame_clinit))
         frame_clinit.enterScope(True)
         self.emit.printout(self.emit.emitLABEL(frame_clinit.getStartLabel(), frame_clinit))
-        # Initializing all global variables
+        ## Initializing all global variables
         for decl in ast.decls:
             if type(decl) == VarDecl:
                 if decl.init:
@@ -363,7 +353,6 @@ class CodeGenVisitor(Visitor):
                         initValue, initType = self.visit(BooleanLit(False), evnList_clinit)
                         self.emit.printout(self.emit.emitPUTSTATIC(f"MT22Class/{decl.name}", decl.typ, frame_clinit))
                     elif type(decl.typ) == StringType:
-                        # TODO Trong Java string ko dc init thi la null
                         initValue, initType = self.visit(StringLit(""), evnList_clinit)
                         self.emit.printout(self.emit.emitPUTSTATIC(f"MT22Class/{decl.name}", decl.typ, frame_clinit))
                     elif type(decl.typ) == ArrayType:
@@ -387,7 +376,7 @@ class CodeGenVisitor(Visitor):
                                     self.emit.printout(self.emit.emitPUSHICONST(i, frame_clinit))
                                     self.emit.printout(self.emit.emitALOAD(decl.typ, frame_clinit))
                                     arrayTraversalBare(decl.name, decl.typ, decl.typ.dimensions[2:], frame_clinit)
-        # Done initializing                            
+        ## Done initializing                         
         self.emit.printout(self.emit.emitLABEL(frame_clinit.getEndLabel(), frame_clinit))
         self.emit.printout(self.emit.emitRETURN(VoidType(), frame_clinit))
         self.emit.printout(self.emit.emitENDMETHOD(frame_clinit))
@@ -405,9 +394,10 @@ class CodeGenVisitor(Visitor):
         self.emit.printout(self.emit.emitENDMETHOD(frame_init))
         frame_init.exitScope()
         
-        # Other functions
+        # Other functions, including main
         for decl in ast.decls:
             if type(decl) == FuncDecl:
-                evnList_func.sym[0] += [self.visit(decl, evnList_func)]
+                self.visit(decl, evnList_func)
 
+        # Generate .j file
         self.emit.emitEPILOG()

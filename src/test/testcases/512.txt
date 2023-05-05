@@ -1,2 +1,2 @@
-a : array [10, 10, 10, 10, 10, 10, 10, 10, 10, 10] of string ;   
+a : array [2] of integer = {1, 2} ;   
                    main : function void () {} 
