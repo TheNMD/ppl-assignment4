@@ -103,23 +103,44 @@ class CodeGenVisitor(Visitor):
     def visitUnExpr(self, ast, o): pass
     
     def visitId(self, ast, o):
+        name = ast.name
         frame = o.frame
         sym = o.sym
         
         for i in range(len(sym)):
             for j in range(len(sym[i])):
                 if i == 0:
-                    if sym[i][j].name == ast.name:
+                    if sym[i][j].name == name:
                         self.emit.printout(self.emit.emitGETSTATIC(f"MT22Class/{sym[i][j].name}", sym[i][j].typ, frame))
                         return sym[i][j].name, sym[i][j].typ
                 else: 
                     pass
                     # TODO khi o trong function
-                    # if sym[i][j].name == ast.name:
+                    # if sym[i][j].name == name:
                     #     self.emit.printout(self.emit.emitREADVAR(sym[i][j].name, sym[i][j].typ, frame.getNewIndex(), frame))
                     #     return sym[i][j].name, sym[i][j].typ
     
-    def visitArrayCell(self, ast, o): pass
+    def visitArrayCell(self, ast, o):
+        name = ast.name
+        cell = ast.cell
+        frame = o.frame
+        sym = o.sym
+        
+        for i in range(len(sym)):
+            for j in range(len(sym[i])):
+                if i == 0:
+                    if sym[i][j].name == name:
+                        self.emit.printout(self.emit.emitGETSTATIC(f"MT22Class/{sym[i][j].name}", sym[i][j].typ, frame))
+                        for ele in cell:
+                            self.visit(ele, o)
+                            self.emit.printout(self.emit.emitALOAD(sym[i][j].typ, frame))
+                        return sym[i][j].name, sym[i][j].typ
+                else: 
+                    pass
+                    # TODO khi o trong function
+                    # if sym[i][j].name == name:
+                    #     self.emit.printout(self.emit.emitREADVAR(sym[i][j].name, sym[i][j].typ, frame.getNewIndex(), frame))
+                    #     return sym[i][j].name, sym[i][j].typ
     
     def visitIntegerLit(self, ast, o):
         frame = o.frame
@@ -325,6 +346,7 @@ class CodeGenVisitor(Visitor):
                                     self.emit.printout(self.emit.emitPUSHICONST(i, frame_clinit))
                                     self.emit.printout(self.emit.emitALOAD(decl.typ, frame_clinit))
                                     arrayTraversalBare(decl.name, decl.typ, decl.typ.dimensions[2:], frame_clinit)
+                            
                             for i in range(int(decl.typ.dimensions[0])):
                                 self.emit.printout(self.emit.emitGETSTATIC(f"MT22Class/{decl.name}", decl.typ, frame_clinit))
                                 self.emit.printout(self.emit.emitPUSHICONST(i, frame_clinit))
