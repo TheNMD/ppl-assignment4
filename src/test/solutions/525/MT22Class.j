@@ -3,7 +3,8 @@
 .super java.lang.Object
 .field static a F
 .field static b I
-.field static c Z
+.field static c [[I
+.field static d Z
 
 .method public <clinit>()V
 Label0:
@@ -12,8 +13,49 @@ Label0:
 	putstatic MT22Class/a F
 	iconst_3
 	putstatic MT22Class/b I
+	iconst_2
+	anewarray [I
+	putstatic MT22Class/c [[I
+	getstatic MT22Class/c [[I
+	iconst_0
+	iconst_2
+	newarray int
+	aastore
+	getstatic MT22Class/c [[I
+	iconst_1
+	iconst_2
+	newarray int
+	aastore
+	getstatic MT22Class/c [[I
+	iconst_0
+	aaload
+	dup
+	iconst_0
+	iconst_1
+	iastore
+	dup
+	iconst_1
+	iconst_2
+	iastore
+	pop
+	getstatic MT22Class/c [[I
+	iconst_1
+	aaload
+	dup
+	iconst_0
+	iconst_3
+	iastore
+	dup
+	iconst_1
+	iconst_4
+	iastore
+	pop
 	getstatic MT22Class/a F
-	getstatic MT22Class/b I
+	getstatic MT22Class/c [[I
+	iconst_0
+	aaload
+	iconst_0
+	iaload
 	i2f
 	fcmpl
 	ifle Label2
@@ -22,10 +64,10 @@ Label0:
 Label2:
 	iconst_0
 Label3:
-	putstatic MT22Class/c Z
+	putstatic MT22Class/d Z
 Label1:
 	return
-.limit stack 2
+.limit stack 4
 .limit locals 0
 .end method
 

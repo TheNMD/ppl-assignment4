@@ -175,7 +175,8 @@ class CheckCodeGenSuite(unittest.TestCase):
     def test25(self):
         input = """a : float = 2 ;
                    b : integer = 3 ;
-                   c : boolean = a > b ;
+                   c : array [2, 2] of integer = {{1, 2}, {3, 4}} ;
+                   d : boolean = a > c[0, 0] ;
                    main : function void () {} """
         expect = ""
         self.assertTrue(TestCodeGen.test(input, expect, 525))
