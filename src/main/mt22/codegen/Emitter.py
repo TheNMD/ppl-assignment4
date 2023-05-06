@@ -297,16 +297,19 @@ class Emitter():
         # in_: Type
         # frame: Frame
 
-        if not lexeme is None and not in_ is None:
-            typ = in_
-            list(map(lambda x: frame.pop(), typ.partype))
-            frame.pop()
-            if not type(typ.rettype) is VoidType:
-                frame.push()
-            return self.jvm.emitINVOKESPECIAL(lexeme, self.getJVMType(in_))
-        elif lexeme is None and in_ is None:
-            frame.pop()
-            return self.jvm.emitINVOKESPECIAL()
+        if lexeme == "java/lang/StringBuilder/<init>":
+            return self.jvm.emitINVOKESPECIAL(lexeme, in_)
+        else:
+            if not lexeme is None and not in_ is None:
+                typ = in_
+                list(map(lambda x: frame.pop(), typ.partype))
+                frame.pop()
+                if not type(typ.rettype) is VoidType:
+                    frame.push()
+                return self.jvm.emitINVOKESPECIAL(lexeme, self.getJVMType(in_))
+            elif lexeme is None and in_ is None:
+                frame.pop()
+                return self.jvm.emitINVOKESPECIAL()
 
     ''' generate code to invoke a virtual method
     * @param lexeme the qualified name of the method(i.e., class-name/method-name)
@@ -318,13 +321,21 @@ class Emitter():
         # in_: Type
         # frame: Frame
 
-        typ = in_
-        list(map(lambda x: frame.pop(), typ.partype))
-        frame.pop()
-        if not type(typ) is VoidType:
-            frame.push()
-        return self.jvm.emitINVOKEVIRTUAL(lexeme, self.getJVMType(in_))
+        if lexeme == "java/lang/StringBuilder/append" or lexeme == "java/lang/StringBuilder/toString":
+            return self.jvm.emitINVOKEVIRTUAL(lexeme, in_)
+        else:
+            typ = in_
+            list(map(lambda x: frame.pop(), typ.partype))
+            frame.pop()
+            if not type(typ) is VoidType:
+                frame.push()
+            return self.jvm.emitINVOKEVIRTUAL(lexeme, self.getJVMType(in_))
 
+    def emitNEW(self, lexeme, frame):
+        
+        frame.push()
+        return self.jvm.emitNEW(lexeme)
+    
     '''
     *   generate ineg, fneg.
     *   @param in the type of the operands.
@@ -335,6 +346,7 @@ class Emitter():
         # frame: Frame
         # ..., value -> ..., result
 
+        frame.pop()
         if type(in_) is IntegerType:
             return self.jvm.emitINEG()
         elif type(in_) is FloatType:
@@ -348,10 +360,10 @@ class Emitter():
         label2 = frame.getNewLabel()
         result = list()
         result.append(self.emitIFTRUE(label1, frame))
-        result.append(self.emitPUSHCONST("true", in_, frame))
+        result.append(self.emitPUSHICONST(1, frame))
         result.append(self.emitGOTO(label2, frame))
         result.append(self.emitLABEL(label1, frame))
-        result.append(self.emitPUSHCONST("false", in_, frame))
+        result.append(self.emitPUSHICONST(0, frame))
         result.append(self.emitLABEL(label2, frame))
         return ''.join(result)
 
@@ -373,7 +385,7 @@ class Emitter():
                 return self.jvm.emitIADD()
             elif type(in_) is FloatType:
                 return self.jvm.emitFADD()
-        else:
+        elif lexeme == "-":
             if type(in_) is IntegerType:
                 return self.jvm.emitISUB()
             elif type(in_) is FloatType:
@@ -535,7 +547,7 @@ class Emitter():
     *   @param in the type of the local array variable.
     '''
     
-    def emitANEWARRAY(self, typ, dim):
+    def emitANEWARRAY(self, typ, dim, frame):
         buffer = list()
         bracket = ""
         for i in range(0, dim - 1):

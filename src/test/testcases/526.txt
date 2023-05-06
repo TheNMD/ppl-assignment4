@@ -1,0 +1,4 @@
+a : string = "abc" ;
+                   b : string = "def" ;
+                   c : string = "123" :: "abc" ;
+                   main : function void () {} 

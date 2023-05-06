@@ -104,45 +104,73 @@ class CodeGenVisitor(Visitor):
         right = ast.right
         frame = o.frame
         
-        leftValue, leftType = self.visit(left, o)
-        rightValue, rightType = self.visit(right, o)
-        
-        if type(leftType) == FloatType and type(rightType) == IntegerType:
-            typ = FloatType()
-            self.emit.printout(self.emit.emitI2F(frame))
-        elif type(leftType) == IntegerType and type(rightType) == FloatType:
-            typ = FloatType()
-            self.emit.printout(self.emit.emitPOP(frame))
-            self.emit.printout(self.emit.emitI2F(frame))
-            self.visit(right, o)
-        elif op == "/":
-            typ = FloatType()
-            if type(leftType) == IntegerType:
+        if op != "::":
+            leftValue, leftType = self.visit(left, o)
+            rightValue, rightType = self.visit(right, o)
+            
+            if type(leftType) == FloatType and type(rightType) == IntegerType:
+                typ = FloatType()
+                self.emit.printout(self.emit.emitI2F(frame))
+            elif type(leftType) == IntegerType and type(rightType) == FloatType:
+                typ = FloatType()
                 self.emit.printout(self.emit.emitPOP(frame))
                 self.emit.printout(self.emit.emitI2F(frame))
                 self.visit(right, o)
-            if type(rightType) == IntegerType:
-                self.emit.printout(self.emit.emitI2F(frame))
+            elif op == "/":
+                typ = FloatType()
+                if type(leftType) == IntegerType:
+                    self.emit.printout(self.emit.emitPOP(frame))
+                    self.emit.printout(self.emit.emitI2F(frame))
+                    self.visit(right, o)
+                if type(rightType) == IntegerType:
+                    self.emit.printout(self.emit.emitI2F(frame))
+            else:
+                typ = leftType
+                
+            if op == "+" or op == "-":
+                self.emit.printout(self.emit.emitADDOP(op, typ, frame))
+                return None, typ
+            elif op == "*" or op == "/":
+                self.emit.printout(self.emit.emitMULOP(op, typ, frame))
+                return None, typ
+            elif op == "%":
+                self.emit.printout(self.emit.emitMOD(frame))
+                return None, typ
+            elif op == "&&":
+                self.emit.printout(self.emit.emitANDOP(frame))
+                return None, typ
+            elif op == "||":
+                self.emit.printout(self.emit.emitOROP(frame))
+                return None, typ
+            elif op == "==" or op == "!=" or op == "<" or op == ">" or op == "<=" or op == ">=":
+                self.emit.printout(self.emit.emitREOP(op, typ, frame))
+                return None, typ
         else:
-            typ = leftType
-            
-        if op == "+" or op == "-":
-            return self.emit.printout(self.emit.emitADDOP(op, typ, frame)), typ
-        elif op == "*" or op == "/":
-            return self.emit.printout(self.emit.emitMULOP(op, typ, frame)), typ
-        elif op == "%":
-            return self.emit.printout(self.emit.emitMOD(frame)), typ
-        elif op == "&&":
-            return self.emit.printout(self.emit.emitANDOP(frame)), typ
-        elif op == "||":
-            return self.emit.printout(self.emit.emitOROP(frame)), typ
-        elif op == "==" or op == "!=" or op == "<" or op == ">" or op == "<=" or op == ">=":
-            # TODO REOP cho float
-            return self.emit.printout(self.emit.emitREOP(op, typ, frame)), typ
-        elif op == "::":
+            # TODO String concat
             pass
+            # self.emit.printout(self.emit.emitNEW("java/lang/StringBuilder", frame))
+            # self.emit.printout(self.emit.emitDUP(frame))
+            # self.emit.printout(self.emit.emitINVOKESPECIAL(frame, "java/lang/StringBuilder/<init>", "()V"))
+            # leftValue, leftType = self.visit(left, o)
+            # self.emit.printout(self.emit.emitINVOKEVIRTUAL("java/lang/StringBuilder/append", "(java/lang/String;)Ljava/lang/StringBuilder;", frame))
+            # rightValue, rightType = self.visit(right, o)
+            # self.emit.printout(self.emit.emitINVOKEVIRTUAL("java/lang/StringBuilder/append", "(java/lang/String;)Ljava/lang/StringBuilder;", frame))
+            # self.emit.printout(self.emit.emitINVOKEVIRTUAL("java/lang/StringBuilder/toString", "()Ljava/lang/String;", frame))
+            # return None, leftType
     
-    def visitUnExpr(self, ast, o): pass
+    def visitUnExpr(self, ast, o):
+        op = str(ast.op)
+        val = ast.val
+        frame = o.frame
+        
+        value, typ = self.visit(val, o)
+        
+        if op == "-":
+            self.emit.printout(self.emit.emitNEGOP(typ, frame))
+            return None, typ
+        elif op == "!":
+            self.emit.printout(self.emit.emitNOT(typ, frame))
+            return None, typ
     
     def visitId(self, ast, o):
         name = ast.name
@@ -152,9 +180,9 @@ class CodeGenVisitor(Visitor):
         for i in range(len(sym)):
             for j in range(len(sym[i])):
                 if i == 0:
-                    if sym[i][j].name == name:
+                    if sym[i][j].name == name and type(sym[i][j]) == VarDecl:
                         self.emit.printout(self.emit.emitGETSTATIC(f"MT22Class/{sym[i][j].name}", sym[i][j].typ, frame))
-                        return sym[i][j].name, sym[i][j].typ
+                        return sym[i][j].init, sym[i][j].typ
                 else: 
                     pass
                     # TODO khi o trong function
@@ -171,16 +199,15 @@ class CodeGenVisitor(Visitor):
         for i in range(len(sym)):
             for j in range(len(sym[i])):
                 if i == 0:
-                    if sym[i][j].name == name:
+                    if sym[i][j].name == name and type(sym[i][j]) == VarDecl:
                         self.emit.printout(self.emit.emitGETSTATIC(f"MT22Class/{sym[i][j].name}", sym[i][j].typ, frame))
                         for k in range(len(cell)):
                             cellValue, cellType = self.visit(cell[k], o)
-                            # TODO So sanh xem cellValue co phai la integer va co vuot upper bound hay lower bound ko
                             if k == len(cell) - 1:
                                 self.emit.printout(self.emit.emitALOAD(sym[i][j].typ.typ, frame))
                             else:
                                 self.emit.printout(self.emit.emitALOAD(sym[i][j].typ, frame))
-                        return sym[i][j].name, sym[i][j].typ.typ
+                        return sym[i][j].init, sym[i][j].typ.typ
                 else: 
                     pass
                     # TODO khi o trong function
@@ -239,7 +266,7 @@ class CodeGenVisitor(Visitor):
     def visitCallStmt(self, ast, o): pass
     
     # Declarations
-    def visitVarDecl(self, ast, o): pass # TODO emitVAR khi visit local variable trong function
+    def visitVarDecl(self, ast, o): pass
 
     def visitParamDecl(self, ast, o): pass
     
@@ -270,7 +297,7 @@ class CodeGenVisitor(Visitor):
                     
                     self.emit.printout(self.emit.emitPUSHICONST(i, frame))
                     self.emit.printout(self.emit.emitPUSHICONST(int(dim[0]), frame))
-                    self.emit.printout(self.emit.emitANEWARRAY(typ, len(dim)))
+                    self.emit.printout(self.emit.emitANEWARRAY(typ, len(dim), frame))
                     self.emit.printout(self.emit.emitASTORE(typ, frame))
                     
                     if i == int(dim[0]) - 1:
@@ -281,7 +308,7 @@ class CodeGenVisitor(Visitor):
 
                     self.emit.printout(self.emit.emitPUSHICONST(i, frame))
                     self.emit.printout(self.emit.emitPUSHICONST(int(dim[0]), frame))
-                    self.emit.printout(self.emit.emitANEWARRAY(typ, len(dim)))
+                    self.emit.printout(self.emit.emitANEWARRAY(typ, len(dim), frame))
                     self.emit.printout(self.emit.emitASTORE(typ, frame))
 
                     self.emit.printout(self.emit.emitDUP(frame))
@@ -355,7 +382,7 @@ class CodeGenVisitor(Visitor):
                         initValue = self.visit(decl.init, evnList_clinit)
                         if len(decl.typ.dimensions) == 1:
                             self.emit.printout(self.emit.emitPUSHICONST(int(decl.typ.dimensions[0]), frame_clinit))
-                            self.emit.printout(self.emit.emitANEWARRAY(decl.typ, len(decl.typ.dimensions)))
+                            self.emit.printout(self.emit.emitANEWARRAY(decl.typ, len(decl.typ.dimensions), frame_clinit))
                             self.emit.printout(self.emit.emitPUTSTATIC(f"MT22Class/{decl.name}", decl.typ, frame_clinit))
                             
                             for i in range(int(decl.typ.dimensions[0])):
@@ -365,13 +392,13 @@ class CodeGenVisitor(Visitor):
                                 self.emit.printout(self.emit.emitASTORE(eleType, frame_clinit))
                         else:
                             self.emit.printout(self.emit.emitPUSHICONST(int(decl.typ.dimensions[0]), frame_clinit))
-                            self.emit.printout(self.emit.emitANEWARRAY(decl.typ, len(decl.typ.dimensions)))
+                            self.emit.printout(self.emit.emitANEWARRAY(decl.typ, len(decl.typ.dimensions), frame_clinit))
                             self.emit.printout(self.emit.emitPUTSTATIC(f"MT22Class/{decl.name}", decl.typ, frame_clinit))
                             for i in range(int(decl.typ.dimensions[0])):
                                 self.emit.printout(self.emit.emitGETSTATIC(f"MT22Class/{decl.name}", decl.typ, frame_clinit))
                                 self.emit.printout(self.emit.emitPUSHICONST(i, frame_clinit))
                                 self.emit.printout(self.emit.emitPUSHICONST(int(decl.typ.dimensions[0]), frame_clinit))
-                                self.emit.printout(self.emit.emitANEWARRAY(decl.typ, len(decl.typ.dimensions) - 1))
+                                self.emit.printout(self.emit.emitANEWARRAY(decl.typ, len(decl.typ.dimensions) - 1, frame_clinit))
                                 self.emit.printout(self.emit.emitASTORE(decl.typ, frame_clinit))
 
                                 if len(decl.typ.dimensions) > 2:
@@ -401,17 +428,17 @@ class CodeGenVisitor(Visitor):
                     elif type(decl.typ) == ArrayType:
                         if len(decl.typ.dimensions) == 1:
                             self.emit.printout(self.emit.emitPUSHICONST(int(decl.typ.dimensions[0]), frame_clinit))
-                            self.emit.printout(self.emit.emitANEWARRAY(decl.typ, len(decl.typ.dimensions)))
+                            self.emit.printout(self.emit.emitANEWARRAY(decl.typ, len(decl.typ.dimensions), frame_clinit))
                             self.emit.printout(self.emit.emitPUTSTATIC(f"MT22Class/{decl.name}", decl.typ, frame_clinit))
                         else:
                             self.emit.printout(self.emit.emitPUSHICONST(int(decl.typ.dimensions[0]), frame_clinit))
-                            self.emit.printout(self.emit.emitANEWARRAY(decl.typ, len(decl.typ.dimensions)))
+                            self.emit.printout(self.emit.emitANEWARRAY(decl.typ, len(decl.typ.dimensions), frame_clinit))
                             self.emit.printout(self.emit.emitPUTSTATIC(f"MT22Class/{decl.name}", decl.typ, frame_clinit))
                             for i in range(int(decl.typ.dimensions[0])):
                                 self.emit.printout(self.emit.emitGETSTATIC(f"MT22Class/{decl.name}", decl.typ, frame_clinit))
                                 self.emit.printout(self.emit.emitPUSHICONST(i, frame_clinit))
                                 self.emit.printout(self.emit.emitPUSHICONST(int(decl.typ.dimensions[0]), frame_clinit))
-                                self.emit.printout(self.emit.emitANEWARRAY(decl.typ, len(decl.typ.dimensions) - 1))
+                                self.emit.printout(self.emit.emitANEWARRAY(decl.typ, len(decl.typ.dimensions) - 1, frame_clinit))
                                 self.emit.printout(self.emit.emitASTORE(decl.typ, frame_clinit))
 
                                 if len(decl.typ.dimensions) > 2:

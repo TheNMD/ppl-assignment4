@@ -1,0 +1,4 @@
+a : string = "abc" ;
+                   b : array [2, 2] of string = {{"123", "456"}, {"789", "101112"}} ;
+                   c : string = a :: b[1, 1] ;
+                   main : function void () {} 
