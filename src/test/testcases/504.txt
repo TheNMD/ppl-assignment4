@@ -1,3 +1,3 @@
  a : integer = 23 ; 
                     b : integer = a ; 
-                    main : function void () {}
+                    main : function void () { return ; }

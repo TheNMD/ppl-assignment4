@@ -1,0 +1,8 @@
+ x : array [2] of integer = {1, 2} ;
+                    func : function void (a : integer, b : float) 
+                    {   
+                        z : array [3] of float = {1.0, 2.0, 3.0} ;
+                        y : float = x[0] ;
+                        return ;
+                    }
+                   main : function void () { return ; } 

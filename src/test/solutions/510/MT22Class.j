@@ -10,17 +10,17 @@ Label0:
 	putstatic MT22Class/a [[F
 	getstatic MT22Class/a [[F
 	iconst_0
-	iconst_3
+	iconst_2
 	newarray float
 	aastore
 	getstatic MT22Class/a [[F
 	iconst_1
-	iconst_3
+	iconst_2
 	newarray float
 	aastore
 	getstatic MT22Class/a [[F
 	iconst_2
-	iconst_3
+	iconst_2
 	newarray float
 	aastore
 	getstatic MT22Class/a [[F

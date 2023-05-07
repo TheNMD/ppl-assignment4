@@ -10,7 +10,7 @@ Label0:
 	putstatic MT22Class/a [[[I
 	getstatic MT22Class/a [[[I
 	iconst_0
-	iconst_3
+	iconst_2
 	anewarray [I
 	aastore
 	getstatic MT22Class/a [[[I
@@ -29,7 +29,7 @@ Label0:
 	pop
 	getstatic MT22Class/a [[[I
 	iconst_1
-	iconst_3
+	iconst_2
 	anewarray [I
 	aastore
 	getstatic MT22Class/a [[[I
@@ -48,7 +48,7 @@ Label0:
 	pop
 	getstatic MT22Class/a [[[I
 	iconst_2
-	iconst_3
+	iconst_2
 	anewarray [I
 	aastore
 	getstatic MT22Class/a [[[I

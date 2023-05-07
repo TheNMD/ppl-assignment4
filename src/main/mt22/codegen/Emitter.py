@@ -169,6 +169,8 @@ class Emitter():
             return self.jvm.emitILOAD(index)
         elif type(inType) is StringType:
             return self.jvm.emitALOAD(index)
+        elif type(inType) is ArrayType:
+            return self.jvm.emitALOAD(index) 
         elif type(inType) == str and inType == "LMT22Class;":
             return self.jvm.emitALOAD(index)
         else:
@@ -209,6 +211,8 @@ class Emitter():
         elif type(inType) is BooleanType:
             return self.jvm.emitISTORE(index)
         elif type(inType) is StringType:
+            return self.jvm.emitASTORE(index)
+        elif type(inType) is ArrayType:
             return self.jvm.emitASTORE(index)
         else:
             raise IllegalOperandException(name)

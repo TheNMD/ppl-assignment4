@@ -1,4 +1,4 @@
 a : integer = 2 ;
                    b : integer = 3 ;
                    c : boolean = a != b ;
-                   main : function void () {} 
+                   main : function void () { return ; } 

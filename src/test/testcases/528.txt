@@ -1,0 +1,6 @@
+ func : function void (a : integer, b : float) 
+                    {
+                        c : array [3, 1, 2] of string = {{{"6", "5"}}, {{"4", "3"}}, {{"2", "1"}}} ;
+                        return ;
+                    }
+                   main : function void () { return ; } 

@@ -1,0 +1,11 @@
+ func : function void (a : integer, b : float) 
+                    {   
+                        c : string ;
+                        d : boolean ;
+                        {
+                            a : integer ;
+                            b : float ;
+                        }
+                        return ;
+                    }
+                   main : function void () { return ; } 

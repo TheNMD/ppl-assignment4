@@ -1,12 +1,24 @@
 .source MT22Class.java
 .class public MT22Class
 .super java.lang.Object
+.field static x [I
 
 .method public <clinit>()V
 Label0:
+	iconst_2
+	newarray int
+	putstatic MT22Class/x [I
+	getstatic MT22Class/x [I
+	iconst_0
+	iconst_1
+	iastore
+	getstatic MT22Class/x [I
+	iconst_1
+	iconst_2
+	iastore
 Label1:
 	return
-.limit stack 0
+.limit stack 3
 .limit locals 0
 .end method
 
@@ -24,40 +36,29 @@ Label1:
 .method public static func(IF)V
 .var 0 is a I from Label0 to Label1
 .var 1 is b F from Label0 to Label1
-.var 2 is c [[I from Label0 to Label1
-.var 3 is d [[F from Label0 to Label1
+.var 2 is z [F from Label0 to Label1
+.var 3 is y F from Label0 to Label1
 Label0:
-	iconst_2
-	anewarray [I
+	iconst_3
+	newarray float
 	astore_2
 	aload_2
 	iconst_0
-	iconst_5
-	newarray int
-	aastore
+	ldc 1.0
+	fastore
 	aload_2
 	iconst_1
-	iconst_5
-	newarray int
-	aastore
-	iconst_3
-	anewarray [F
-	astore_3
-	aload_3
-	iconst_0
-	bipush 10
-	newarray float
-	aastore
-	aload_3
-	iconst_1
-	bipush 10
-	newarray float
-	aastore
-	aload_3
+	ldc 2.0
+	fastore
+	aload_2
 	iconst_2
-	bipush 10
-	newarray float
-	aastore
+	ldc 3.0
+	fastore
+	getstatic MT22Class/x [I
+	iconst_0
+	iaload
+	i2f
+	fstore_3
 Label1:
 	return
 .limit stack 3

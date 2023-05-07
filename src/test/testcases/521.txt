@@ -1,4 +1,4 @@
 a : float = 8.3 ;
                    b : integer = 3 ;
                    c : float = a / b ;  
-                   main : function void () {} 
+                   main : function void () { return ; } 

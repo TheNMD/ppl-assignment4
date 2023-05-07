@@ -13,7 +13,7 @@ Label0:
 	putstatic MT22Class/a F
 	iconst_3
 	putstatic MT22Class/b I
-	iconst_2
+	iconst_3
 	anewarray [I
 	putstatic MT22Class/c [[I
 	getstatic MT22Class/c [[I
@@ -23,6 +23,11 @@ Label0:
 	aastore
 	getstatic MT22Class/c [[I
 	iconst_1
+	iconst_2
+	newarray int
+	aastore
+	getstatic MT22Class/c [[I
+	iconst_2
 	iconst_2
 	newarray int
 	aastore
@@ -48,6 +53,18 @@ Label0:
 	dup
 	iconst_1
 	iconst_4
+	iastore
+	pop
+	getstatic MT22Class/c [[I
+	iconst_2
+	aaload
+	dup
+	iconst_0
+	iconst_5
+	iastore
+	dup
+	iconst_1
+	bipush 6
 	iastore
 	pop
 	getstatic MT22Class/a F

@@ -1,0 +1,7 @@
+ func : function void (a : integer, b : float) 
+                    {
+                        c : array [3] of string = {"1", "2", "3"} ;
+                        d : string = c[2] ;
+                        return ;
+                    }
+                   main : function void () { return ; } 

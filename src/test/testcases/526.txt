@@ -1,4 +1,7 @@
-a : string = "abc" ;
-                   b : string = "def" ;
-                   c : string = "123" :: "abc" ;
-                   main : function void () {} 
+func : function void (a : integer, b : float) 
+                    {
+                        c : array [2, 5] of integer ;
+                        d : array [3, 10] of float ;
+                        return ;
+                    }
+                   main : function void () { return ; } 

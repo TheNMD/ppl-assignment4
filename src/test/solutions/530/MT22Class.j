@@ -24,44 +24,74 @@ Label1:
 .method public static func(IF)V
 .var 0 is a I from Label0 to Label1
 .var 1 is b F from Label0 to Label1
-.var 2 is c [[I from Label0 to Label1
-.var 3 is d [[F from Label0 to Label1
+.var 2 is c [[Ljava/lang/String; from Label0 to Label1
+.var 3 is e I from Label0 to Label1
+.var 4 is d Ljava/lang/String; from Label0 to Label1
 Label0:
-	iconst_2
-	anewarray [I
+	iconst_3
+	anewarray [Ljava/lang/String;
 	astore_2
 	aload_2
 	iconst_0
-	iconst_5
-	newarray int
+	iconst_2
+	anewarray java/lang/String
 	aastore
 	aload_2
 	iconst_1
-	iconst_5
-	newarray int
-	aastore
-	iconst_3
-	anewarray [F
-	astore_3
-	aload_3
-	iconst_0
-	bipush 10
-	newarray float
-	aastore
-	aload_3
-	iconst_1
-	bipush 10
-	newarray float
-	aastore
-	aload_3
 	iconst_2
-	bipush 10
-	newarray float
+	anewarray java/lang/String
 	aastore
+	aload_2
+	iconst_2
+	iconst_2
+	anewarray java/lang/String
+	aastore
+	aload_2
+	iconst_0
+	aaload
+	dup
+	iconst_0
+	ldc  "1" 
+	aastore
+	dup
+	iconst_1
+	ldc  "2" 
+	aastore
+	pop
+	aload_2
+	iconst_1
+	aaload
+	dup
+	iconst_0
+	ldc  "3" 
+	aastore
+	dup
+	iconst_1
+	ldc  "4" 
+	aastore
+	pop
+	aload_2
+	iconst_2
+	aaload
+	dup
+	iconst_0
+	ldc  "5" 
+	aastore
+	dup
+	iconst_1
+	ldc  "6" 
+	aastore
+	pop
+	aload_2
+	iconst_2
+	aaload
+	iconst_1
+	aaload
+	astore 4
 Label1:
 	return
-.limit stack 3
-.limit locals 4
+.limit stack 4
+.limit locals 5
 .end method
 
 .method public static main([Ljava/lang/String;)V

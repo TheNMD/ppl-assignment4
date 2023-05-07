@@ -5,4 +5,4 @@
                     c : boolean ;
                     c1 : boolean ;
                     d : string ;
-                    main : function void () {}
+                    main : function void () { return ; }

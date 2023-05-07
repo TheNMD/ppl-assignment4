@@ -10,7 +10,7 @@ Label0:
 	putstatic MT22Class/a [[[[Ljava/lang/String;
 	getstatic MT22Class/a [[[[Ljava/lang/String;
 	iconst_0
-	iconst_3
+	iconst_2
 	anewarray [[Ljava/lang/String;
 	aastore
 	getstatic MT22Class/a [[[[Ljava/lang/String;
@@ -57,7 +57,7 @@ Label0:
 	pop
 	getstatic MT22Class/a [[[[Ljava/lang/String;
 	iconst_1
-	iconst_3
+	iconst_2
 	anewarray [[Ljava/lang/String;
 	aastore
 	getstatic MT22Class/a [[[[Ljava/lang/String;
@@ -104,7 +104,7 @@ Label0:
 	pop
 	getstatic MT22Class/a [[[[Ljava/lang/String;
 	iconst_2
-	iconst_3
+	iconst_2
 	anewarray [[Ljava/lang/String;
 	aastore
 	getstatic MT22Class/a [[[[Ljava/lang/String;

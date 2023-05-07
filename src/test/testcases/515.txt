@@ -1,2 +1,2 @@
 a : integer = 1 - (4 - (2 + 3)) ;   
-                   main : function void () {} 
+                   main : function void () { return ; } 
