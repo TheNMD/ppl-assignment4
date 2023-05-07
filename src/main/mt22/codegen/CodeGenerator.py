@@ -7,7 +7,6 @@ from abc import ABC
 from Visitor import *
 from AST import *
 
-
 class MType:
     def __init__(self, partype, rettype):
         self.partype = partype
@@ -74,7 +73,6 @@ class Index(Val):
 class CName(Val):
     def __init__(self, value):
         self.value = value
-
 
 class CodeGenVisitor(Visitor):
     def __init__(self, ast, env, path):
@@ -185,7 +183,10 @@ class CodeGenVisitor(Visitor):
                         return sym[i][j].init, sym[i][j].typ
                 else: 
                     if sym[i][j].name == name and type(sym[i][j]) == VarDecl:
-                        idx = sym[i].index(sym[i][j])
+                        total_length = 0
+                        for k in range(2, i):
+                            total_length += len(sym[k])
+                        idx = j + total_length
                         self.emit.printout(self.emit.emitREADVAR(sym[i][j].name, sym[i][j].typ, idx, frame))
                         return sym[i][j].init, sym[i][j].typ
     
@@ -209,7 +210,10 @@ class CodeGenVisitor(Visitor):
                         return sym[i][j].init, sym[i][j].typ.typ
                 else: 
                     if sym[i][j].name == name and type(sym[i][j]) == VarDecl:
-                        idx = sym[i].index(sym[i][j])
+                        total_length = 0
+                        for k in range(2, i):
+                            total_length += len(sym[k])
+                        idx = j + total_length
                         self.emit.printout(self.emit.emitREADVAR(sym[i][j].name, sym[i][j].typ, idx, frame))
                         for k in range(len(cell)):
                             cellValue, cellType = self.visit(cell[k], o)
@@ -311,7 +315,7 @@ class CodeGenVisitor(Visitor):
         
         # Variables in inner block
         evnList = SubBody(frame, o.sym.copy())
-        if len(body) > 1:
+        if len(body) > 0:
             local_var = SubBody(frame, [])
             for ele in body:
                 if type(ele) == VarDecl:
@@ -413,7 +417,22 @@ class CodeGenVisitor(Visitor):
     
     def visitContinueStmt(self, ast, o): pass
     
-    def visitReturnStmt(self, ast, o): pass
+    def visitReturnStmt(self, ast, o):
+        expr = ast.expr
+        frame = o.frame
+        
+        funcList = [func for func in o.sym[0] if type(func) == FuncDecl]
+        return_type = funcList[self.func_counter].return_type
+        
+        if expr:
+            exprValue, exprType = self.visit(expr, o)
+            if type(return_type) == FloatType and type(exprType) == IntegerType:
+                self.emit.printout(self.emit.emitI2F(frame))
+                self.emit.printout(self.emit.emitRETURN(return_type, frame))
+            else:
+                self.emit.printout(self.emit.emitRETURN(exprType, frame))
+        else:
+            self.emit.printout(self.emit.emitRETURN(VoidType(), frame))
     
     def visitCallStmt(self, ast, o): pass
     
@@ -597,8 +616,6 @@ class CodeGenVisitor(Visitor):
                 self.visit(ele, evnList)
         
         self.emit.printout(self.emit.emitLABEL(frame.getEndLabel(), frame))
-        if type(return_type) == VoidType:
-            self.emit.printout(self.emit.emitRETURN(VoidType(), frame))
         
         frame.exitScope()
             
@@ -656,6 +673,9 @@ class CodeGenVisitor(Visitor):
                     arrayTraversalInit(name, typ, dim[1:], frame, init)
                     
                 self.emit.printout(self.emit.emitPOP(frame))
+        
+        self.func_counter = 0
+        
         # Emitter
         self.emit = Emitter(self.path + "/" + "MT22Class" +  ".j")
          
@@ -784,6 +804,7 @@ class CodeGenVisitor(Visitor):
         for decl in ast.decls:
             if type(decl) == FuncDecl:
                 self.visit(decl, evnList_func)
+                self.func_counter += 1
 
         # Generate .j file
         self.emit.emitEPILOG()

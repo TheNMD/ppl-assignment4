@@ -1,21 +1,12 @@
 .source MT22Class.java
 .class public MT22Class
 .super java.lang.Object
-.field static a I
 
 .method public <clinit>()V
 Label0:
-	iconst_1
-	iconst_4
-	iconst_2
-	iconst_3
-	iadd
-	isub
-	isub
-	putstatic MT22Class/a I
 Label1:
 	return
-.limit stack 4
+.limit stack 0
 .limit locals 0
 .end method
 
@@ -28,6 +19,21 @@ Label1:
 	return
 .limit stack 1
 .limit locals 1
+.end method
+
+.method public static func(IF)F
+.var 0 is a I from Label0 to Label1
+.var 1 is b F from Label0 to Label1
+Label0:
+	iconst_2
+	i2f
+	freturn
+	iconst_3
+	i2f
+	freturn
+Label1:
+.limit stack 1
+.limit locals 2
 .end method
 
 .method public static main([Ljava/lang/String;)V

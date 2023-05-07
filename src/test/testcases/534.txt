@@ -1,0 +1,6 @@
+ func : function float (a : integer, b : float) 
+                        {   
+                            return 2 ;
+                            return 3 ;
+                        }
+                    main : function void () { return ; } 

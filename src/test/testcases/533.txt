@@ -1,0 +1,20 @@
+ func : function void (a : integer, b : float) 
+                        {   
+                            o : string ;
+                            l : string ;
+                            c : array [2] of integer = {1, 2} ;
+                            m : integer ;
+                            {
+                                d : boolean = c[0] ;
+                                {
+                                    f : string ;
+                                    g : string ;
+                                    e : array [2] of integer = {1, 2} ;
+                                    {
+                                        x : boolean = e[1] ;
+                                    }
+                                }
+                            }
+                            return ;
+                        }
+                    main : function void () { return ; } 
