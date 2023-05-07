@@ -1,0 +1,9 @@
+ 
+                    c : array [2, 2, 2] of string ;
+                    func : function void (a : integer, b : float) 
+                    {   
+                        d : array [2] of string = {"123", "456"} ;
+                        c[0, 0, 0] = d[0] ;
+                        return ;
+                    }
+                   main : function void () { return ; } 

@@ -80,21 +80,6 @@ class CodeGenVisitor(Visitor):
         self.env = env
         self.path = path
     
-    # Types
-    def visitIntegerType(self, ast, o): pass
-    
-    def visitFloatType(self, ast, o): pass
-    
-    def visitBooleanType(self, ast, o): pass
-    
-    def visitStringType(self, ast, o): pass
-    
-    def visitArrayType(self, ast, o): pass
-    
-    def visitAutoType(self, ast, o): pass
-    
-    def visitVoidType(self, ast, o): pass
-    
     # Literals
     def visitBinExpr(self, ast, o):
         op = str(ast.op)
@@ -173,7 +158,7 @@ class CodeGenVisitor(Visitor):
     def visitId(self, ast, o):
         name = ast.name
         frame = o.frame
-        sym = o.sym.copy()
+        sym = o.sym
         
         for i in range(len(sym) - 1, -1 , -1):
             for j in range(len(sym[i])):
@@ -184,7 +169,7 @@ class CodeGenVisitor(Visitor):
                 else: 
                     if sym[i][j].name == name and type(sym[i][j]) == VarDecl:
                         total_length = 0
-                        for k in range(2, i):
+                        for k in range(1, i):
                             total_length += len(sym[k])
                         idx = j + total_length
                         self.emit.printout(self.emit.emitREADVAR(sym[i][j].name, sym[i][j].typ, idx, frame))
@@ -194,7 +179,7 @@ class CodeGenVisitor(Visitor):
         name = ast.name
         cell = ast.cell
         frame = o.frame
-        sym = o.sym.copy()
+        sym = o.sym
         
         for i in range(len(sym) - 1, -1 , -1):
             for j in range(len(sym[i])):
@@ -211,7 +196,7 @@ class CodeGenVisitor(Visitor):
                 else: 
                     if sym[i][j].name == name and type(sym[i][j]) == VarDecl:
                         total_length = 0
-                        for k in range(2, i):
+                        for k in range(1, i):
                             total_length += len(sym[k])
                         idx = j + total_length
                         self.emit.printout(self.emit.emitREADVAR(sym[i][j].name, sym[i][j].typ, idx, frame))
@@ -256,7 +241,67 @@ class CodeGenVisitor(Visitor):
     def visitFuncCall(self, ast, o): pass
 
     # Statements
-    def visitAssignStmt(self, ast, o): pass
+    def visitAssignStmt(self, ast, o):
+        lhs = ast.lhs
+        rhs = ast.rhs
+        frame = o.frame
+
+        if type(lhs) == Id:
+            name = lhs.name
+            frame = o.frame
+            sym = o.sym
+            
+            for i in range(len(sym) - 1, -1 , -1):
+                for j in range(len(sym[i])):
+                    if i == 0:
+                        if sym[i][j].name == name and type(sym[i][j]) == VarDecl:
+                            rightValue, rightType = self.visit(rhs, o)
+                            if type(sym[i][j].typ) == FloatType and type(rightType) == IntegerType:
+                                self.emit.printout(self.emit.emitI2F(frame))
+                            self.emit.printout(self.emit.emitPUTSTATIC(f"MT22Class/{sym[i][j].name}", sym[i][j].typ, frame))
+                            return
+                    else: 
+                        if sym[i][j].name == name and (type(sym[i][j]) == VarDecl or type(sym[i][j]) == ParamDecl):
+                            total_length = 0
+                            for k in range(1, i):
+                                total_length += len(sym[k])
+                            idx = j + total_length
+                            rightValue, rightType = self.visit(rhs, o)
+                            if type(sym[i][j].typ) == FloatType and type(rightType) == IntegerType:
+                                self.emit.printout(self.emit.emitI2F(frame))
+                            self.emit.printout(self.emit.emitWRITEVAR(sym[i][j].name, sym[i][j].typ, idx, frame))
+                            return
+        elif type(lhs) == ArrayCell:
+            name = lhs.name
+            cell = lhs.cell
+            frame = o.frame
+            sym = o.sym
+            for i in range(len(sym) - 1, -1 , -1):
+                for j in range(len(sym[i])):
+                    if i == 0:
+                        if sym[i][j].name == name and type(sym[i][j]) == VarDecl:
+                            self.emit.printout(self.emit.emitGETSTATIC(f"MT22Class/{sym[i][j].name}", sym[i][j].typ, frame))
+                            for k in range(len(cell)):
+                                cellValue, cellType = self.visit(cell[k], o)
+                                if k != len(cell) - 1:
+                                    self.emit.printout(self.emit.emitALOAD(sym[i][j].typ, frame))
+                            rightValue, rightType = self.visit(rhs, o)
+                            self.emit.printout(self.emit.emitASTORE(rightType, frame))
+                            return
+                    else: 
+                        if sym[i][j].name == name and (type(sym[i][j]) == VarDecl or type(sym[i][j]) == ParamDecl):
+                            total_length = 0
+                            for k in range(1, i):
+                                total_length += len(sym[k])
+                            idx = j + total_length
+                            self.emit.printout(self.emit.emitREADVAR(sym[i][j].name, sym[i][j].typ, idx, frame))
+                            for k in range(len(cell)):
+                                cellValue, cellType = self.visit(cell[k], o)
+                                if k != len(cell) - 1:
+                                    self.emit.printout(self.emit.emitALOAD(sym[i][j].typ, frame))
+                            rightValue, rightType = self.visit(rhs, o)
+                            self.emit.printout(self.emit.emitASTORE(rightType, frame))
+                            return
         
     def visitBlockStmt(self, ast, o):
         def arrayTraversalBare(name, typ, dim, frame):
@@ -315,18 +360,24 @@ class CodeGenVisitor(Visitor):
         
         # Variables in inner block
         evnList = SubBody(frame, o.sym.copy())
-        if len(body) > 0:
-            local_var = SubBody(frame, [])
-            for ele in body:
-                if type(ele) == VarDecl:
-                    local_var.sym += [self.visit(ele, local_var)]
-            evnList.sym += [local_var.sym]
+        local_var = SubBody(frame, [])
+        for ele in body:
+            if type(ele) == VarDecl:
+                local_var.sym += [self.visit(ele, local_var)]
         
         # Statements
         self.emit.printout(self.emit.emitLABEL(frame.getStartLabel(), frame))
         
+        counter = 0
         for ele in body:
             if type(ele) == VarDecl:
+                if body.index(ele) == 0:
+                    evnList.sym += [[local_var.sym[counter]]]
+                    counter += 1
+                else:
+                    evnList.sym[-1] += [local_var.sym[counter]]
+                    counter += 1
+                # print(evnList.sym)
                 if ele.init:
                     total_length = 0
                     for i in range(1, len(evnList.sym) - 1):
@@ -534,17 +585,23 @@ class CodeGenVisitor(Visitor):
             for ele in params:
                 local_para.sym += [self.visit(ele, local_para)]
             evnList.sym += [local_para.sym]
-        if len(body) > 1:
-            local_var = SubBody(frame, [])
-            for ele in body:
-                if type(ele) == VarDecl:
-                    local_var.sym += [self.visit(ele, local_var)]
-            evnList.sym[1] += local_var.sym
+
+        local_var = SubBody(frame, [])
+        for ele in body:
+            if type(ele) == VarDecl:
+                local_var.sym += [self.visit(ele, local_var)]
         
         # Statements
         self.emit.printout(self.emit.emitLABEL(frame.getStartLabel(), frame))
+        counter = 0
         for ele in body:
             if type(ele) == VarDecl:
+                if body.index(ele) == 0:
+                    evnList.sym += [[local_var.sym[counter]]]
+                    counter += 1
+                else:
+                    evnList.sym[-1] += [local_var.sym[counter]]
+                    counter += 1
                 if ele.init:
                     idx = body.index(ele) + len(params)
                     if type(ele.typ) != ArrayType:
