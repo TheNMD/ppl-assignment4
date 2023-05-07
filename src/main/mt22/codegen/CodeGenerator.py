@@ -255,6 +255,55 @@ class CodeGenVisitor(Visitor):
     def visitAssignStmt(self, ast, o): pass
         
     def visitBlockStmt(self, ast, o):
+        def arrayTraversalBare(name, typ, dim, frame):
+            if len(dim) == 2:
+                for i in range(int(dim[0])):
+                    self.emit.printout(self.emit.emitDUP(frame))
+                    
+                    self.emit.printout(self.emit.emitPUSHICONST(i, frame))
+                    self.emit.printout(self.emit.emitPUSHICONST(int(dim[1]), frame))
+                    self.emit.printout(self.emit.emitANEWARRAY(typ, len(dim) - 1, frame))
+                    self.emit.printout(self.emit.emitASTORE(typ, frame))
+                    
+                self.emit.printout(self.emit.emitPOP(frame))
+            else:
+                for i in range(int(dim[0])):
+                    self.emit.printout(self.emit.emitDUP(frame))
+
+                    self.emit.printout(self.emit.emitPUSHICONST(i, frame))
+                    self.emit.printout(self.emit.emitPUSHICONST(int(dim[1]), frame))
+                    self.emit.printout(self.emit.emitANEWARRAY(typ, len(dim) - 1, frame))
+                    self.emit.printout(self.emit.emitASTORE(typ, frame))
+
+                    self.emit.printout(self.emit.emitDUP(frame))
+                    self.emit.printout(self.emit.emitPUSHICONST(i, frame))
+                    self.emit.printout(self.emit.emitALOAD(typ, frame))
+                    arrayTraversalBare(name, typ, dim[1:], frame)
+                    
+                self.emit.printout(self.emit.emitPOP(frame))
+        
+        def arrayTraversalInit(name, typ, dim, frame, init):
+            if len(dim) == 1:
+                for i in range(int(dim[0])):
+                    self.emit.printout(self.emit.emitDUP(frame))
+                    
+                    self.emit.printout(self.emit.emitPUSHICONST(i, frame))
+                    eleValue, eleType = self.visit(init[0], evnList)
+                    self.emit.printout(self.emit.emitASTORE(eleType, frame))
+                    
+                    init.pop(0)
+                     
+                self.emit.printout(self.emit.emitPOP(frame))
+            else:
+                for i in range(int(dim[0])):
+                    self.emit.printout(self.emit.emitDUP(frame))
+                    
+                    self.emit.printout(self.emit.emitPUSHICONST(i, frame))
+                    self.emit.printout(self.emit.emitALOAD(typ, frame))
+                    arrayTraversalInit(name, typ, dim[1:], frame, init)
+                    
+                self.emit.printout(self.emit.emitPOP(frame))
+        
         body = ast.body
         frame = o.frame
         
@@ -269,9 +318,84 @@ class CodeGenVisitor(Visitor):
                     local_var.sym += [self.visit(ele, local_var)]
             evnList.sym += [local_var.sym]
         
-        
         # Statements
         self.emit.printout(self.emit.emitLABEL(frame.getStartLabel(), frame))
+        
+        for ele in body:
+            if type(ele) == VarDecl:
+                if ele.init:
+                    total_length = 0
+                    for i in range(1, len(evnList.sym) - 1):
+                        total_length += len(evnList.sym[i])
+                    idx = body.index(ele) + total_length
+                    if type(ele.typ) != ArrayType:
+                        initValue, initType = self.visit(ele.init, evnList)
+                        if type(ele.typ) == FloatType and type(initType) == IntegerType:
+                            self.emit.printout(self.emit.emitI2F(frame))
+                        self.emit.printout(self.emit.emitWRITEVAR(ele.name, ele.typ, idx, frame))
+                    else:
+                        initValue = self.visit(ele.init, evnList)
+                        if len(ele.typ.dimensions) == 1:
+                            self.emit.printout(self.emit.emitPUSHICONST(int(ele.typ.dimensions[0]), frame))
+                            self.emit.printout(self.emit.emitANEWARRAY(ele.typ, len(ele.typ.dimensions), frame))
+                            self.emit.printout(self.emit.emitWRITEVAR(ele.name, ele.typ, idx, frame))
+                            
+                            for i in range(int(ele.typ.dimensions[0])):
+                                self.emit.printout(self.emit.emitREADVAR(ele.name, ele.typ, idx, frame))
+                                self.emit.printout(self.emit.emitPUSHICONST(i, frame))
+                                cellValue, cellType = self.visit(initValue[i], evnList)
+                                self.emit.printout(self.emit.emitASTORE(cellType, frame))
+                        else:
+                            self.emit.printout(self.emit.emitPUSHICONST(int(ele.typ.dimensions[0]), frame))
+                            self.emit.printout(self.emit.emitANEWARRAY(ele.typ, len(ele.typ.dimensions), frame))
+                            self.emit.printout(self.emit.emitWRITEVAR(ele.name, ele.typ, idx, frame))
+                            for i in range(int(ele.typ.dimensions[0])):
+                                self.emit.printout(self.emit.emitREADVAR(ele.name, ele.typ, idx, frame))
+                                self.emit.printout(self.emit.emitPUSHICONST(i, frame))
+                                self.emit.printout(self.emit.emitPUSHICONST(int(ele.typ.dimensions[1]), frame))
+                                self.emit.printout(self.emit.emitANEWARRAY(ele.typ, len(ele.typ.dimensions) - 1, frame))
+                                self.emit.printout(self.emit.emitASTORE(ele.typ, frame))
+
+                                if len(ele.typ.dimensions) > 2:
+                                    self.emit.printout(self.emit.emitREADVAR(ele.name, ele.typ, idx, frame))
+                                    self.emit.printout(self.emit.emitPUSHICONST(i, frame))
+                                    self.emit.printout(self.emit.emitALOAD(ele.typ, frame))
+                                    arrayTraversalBare(ele.name, ele.typ, ele.typ.dimensions[1:], frame)
+                            
+                            for i in range(int(ele.typ.dimensions[0])):
+                                self.emit.printout(self.emit.emitREADVAR(ele.name, ele.typ, idx, frame))
+                                self.emit.printout(self.emit.emitPUSHICONST(i, frame))
+                                self.emit.printout(self.emit.emitALOAD(ele.typ, frame))
+                                arrayTraversalInit(ele.name, ele.typ, ele.typ.dimensions[1:], frame, initValue)
+                else:
+                    # TODO Var trong function ma ko co init thi ko tao default value, ngoai tru khoi tao array
+                    total_length = 0
+                    for i in range(1, len(evnList.sym) - 1):
+                        total_length += len(evnList.sym[i])
+                    idx = body.index(ele) + total_length
+                    if type(ele.typ) == ArrayType:
+                        if len(ele.typ.dimensions) == 1:
+                            self.emit.printout(self.emit.emitPUSHICONST(int(ele.typ.dimensions[0]), frame))
+                            self.emit.printout(self.emit.emitANEWARRAY(ele.typ, len(ele.typ.dimensions), frame))
+                            self.emit.printout(self.emit.emitWRITEVAR(ele.name, ele.typ, idx, frame))
+                        else:
+                            self.emit.printout(self.emit.emitPUSHICONST(int(ele.typ.dimensions[0]), frame))
+                            self.emit.printout(self.emit.emitANEWARRAY(ele.typ, len(ele.typ.dimensions), frame))
+                            self.emit.printout(self.emit.emitWRITEVAR(ele.name, ele.typ, idx, frame))
+                            for i in range(int(ele.typ.dimensions[0])):
+                                self.emit.printout(self.emit.emitREADVAR(ele.name, ele.typ, idx, frame))
+                                self.emit.printout(self.emit.emitPUSHICONST(i, frame))
+                                self.emit.printout(self.emit.emitPUSHICONST(int(ele.typ.dimensions[1]), frame))
+                                self.emit.printout(self.emit.emitANEWARRAY(ele.typ, len(ele.typ.dimensions) - 1, frame))
+                                self.emit.printout(self.emit.emitASTORE(ele.typ, frame))
+
+                                if len(ele.typ.dimensions) > 2:
+                                    self.emit.printout(self.emit.emitREADVAR(ele.name, ele.typ, idx, frame))
+                                    self.emit.printout(self.emit.emitPUSHICONST(i, frame))
+                                    self.emit.printout(self.emit.emitALOAD(ele.typ, frame))
+                                    arrayTraversalBare(ele.name, ele.typ, ele.typ.dimensions[1:], frame)
+            else:
+                self.visit(ele, evnList)
         
         self.emit.printout(self.emit.emitLABEL(frame.getEndLabel(), frame))
         

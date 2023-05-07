@@ -1,10 +1,19 @@
- func : function void (a : integer, b : float) 
+ 
+                    c : string = "true" ;
+                    func : function void (a : integer, b : float) 
                     {   
-                        c : string ;
-                        d : boolean ;
+                        c : boolean = false ;
+                        d : boolean = true ;
+                        x : string ;
+                        y : string ;
+                        z : string ;
                         {
-                            a : integer ;
-                            b : float ;
+                            a : integer = 2 ;
+                            b : float = 3.5 ;
+                            {
+                                x : boolean = c ;
+                                d : boolean = true ;
+                            }
                         }
                         return ;
                     }

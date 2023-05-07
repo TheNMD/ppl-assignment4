@@ -249,13 +249,22 @@ class CheckCodeGenSuite(unittest.TestCase):
     #     self.assertTrue(TestCodeGen.test(input, expect, 531))
         
     def test32(self):
-        input = """ func : function void (a : integer, b : float) 
+        input = """ 
+                    c : string = "true" ;
+                    func : function void (a : integer, b : float) 
                     {   
-                        c : string ;
-                        d : boolean ;
+                        c : boolean = false ;
+                        d : boolean = true ;
+                        x : string ;
+                        y : string ;
+                        z : string ;
                         {
-                            a : integer ;
-                            b : float ;
+                            a : integer = 2 ;
+                            b : float = 3.5 ;
+                            {
+                                x : boolean = c ;
+                                d : boolean = true ;
+                            }
                         }
                         return ;
                     }
