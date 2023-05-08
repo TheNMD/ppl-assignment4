@@ -10,21 +10,9 @@
 
 .method public <clinit>()V
 Label0:
-	iconst_0
-	putstatic MT22Class/a I
-	ldc 0.0
-	putstatic MT22Class/b F
-	ldc 0.0
-	putstatic MT22Class/b1 F
-	iconst_0
-	putstatic MT22Class/c Z
-	iconst_0
-	putstatic MT22Class/c1 Z
-	ldc  "" 
-	putstatic MT22Class/d Ljava/lang/String;
 Label1:
 	return
-.limit stack 1
+.limit stack 0
 .limit locals 0
 .end method
 
