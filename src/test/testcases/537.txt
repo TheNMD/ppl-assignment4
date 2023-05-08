@@ -1,0 +1,6 @@
+ func : function void (a : integer, b : float) 
+                    {   
+                        if (1 != 2) a = 2 ;
+                        return ;
+                    }
+                   main : function void () { return ; } 

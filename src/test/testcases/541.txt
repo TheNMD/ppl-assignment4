@@ -1,0 +1,10 @@
+ func : function integer (a : integer, b : float) 
+                    {   
+                        for (i = 0, i < 2, i + 1)
+                        {
+                            if (1 > 2) return 3 ;
+                            else return 5 ; 
+                        }
+                        return 2 ;
+                    }
+                   main : function void () { return ; } 

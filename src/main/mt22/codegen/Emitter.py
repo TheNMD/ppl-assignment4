@@ -201,9 +201,7 @@ class Emitter():
         # index: Int
         # frame: Frame
         # ..., value -> ...
-
         frame.pop()
-
         if type(inType) is IntegerType:
             return self.jvm.emitISTORE(index)
         elif type(inType) is FloatType:

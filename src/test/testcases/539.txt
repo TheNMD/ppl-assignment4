@@ -1,0 +1,7 @@
+ c : array [2] of string ;
+                    func : function integer (a : integer, b : float) 
+                    {   
+                        for (i = 0, i < 2, i + 1) { c[i] = "2" ; }
+                        return 2 ;
+                    }
+                   main : function void () { return ; } 
