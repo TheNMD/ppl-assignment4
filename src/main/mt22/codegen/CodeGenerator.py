@@ -43,6 +43,7 @@ class CodeGenerator:
         # dir_: String
 
         gl = self.init()
+        print(gl)
         gc = CodeGenVisitor(ast, gl, path)
         gc.visit(ast, None)
 
@@ -139,7 +140,7 @@ class CodeGenVisitor(Visitor):
             # rightValue, rightType = self.visit(right, o)
             # self.emit.printout(self.emit.emitINVOKEVIRTUAL("java/lang/StringBuilder/append", "(java/lang/String;)Ljava/lang/StringBuilder;", frame))
             # self.emit.printout(self.emit.emitINVOKEVIRTUAL("java/lang/StringBuilder/toString", "()Ljava/lang/String;", frame))
-            # return None, leftType
+            # return ast, leftType
     
     def visitUnExpr(self, ast, o):
         op = str(ast.op)
@@ -438,7 +439,7 @@ class CodeGenVisitor(Visitor):
         
         frame.enterLoop()
         label_start = frame.getContinueLabel()
-        label_cmpr = frame.getNewLabel()
+        label_cmp = frame.getNewLabel()
         label_end = frame.getBreakLabel()
         
         name = init.lhs.name
@@ -454,19 +455,20 @@ class CodeGenVisitor(Visitor):
         # Init 
         self.visit(init, evnList)
         
-        self.emit.printout(self.emit.emitGOTO(label_cmpr, frame))
+        self.emit.printout(self.emit.emitGOTO(label_cmp, frame))
         
         self.emit.printout(self.emit.emitLABEL(label_start, frame))
         # Update
         self.visit(upd, evnList)
         self.emit.printout(self.emit.emitWRITEVAR(name, typ, idx, frame))
         
-        self.emit.printout(self.emit.emitLABEL(label_cmpr, frame))
+        self.emit.printout(self.emit.emitLABEL(label_cmp, frame))
         
         # Condition & Statement
+        # Condition
         self.visit(cond, evnList)
         self.emit.printout(self.emit.emitIFFALSE(label_end, frame))
-        # Statement
+        ## Statement
         self.visit(stmt, evnList)
         # Go back to start label
         self.emit.printout(self.emit.emitGOTO(label_start, frame))
@@ -477,9 +479,49 @@ class CodeGenVisitor(Visitor):
     
     def visitWhileStmt(self, ast, o):
         cond = ast.cond
+        stmt = ast.stmt
         frame = o.frame
-    
-    def visitDoWhileStmt(self, ast, o): pass
+
+        frame.enterLoop()
+        label_start = frame.getContinueLabel()
+        label_end = frame.getBreakLabel()
+        
+        self.emit.printout(self.emit.emitLABEL(label_start, frame))
+        
+        # Condition & Statement
+        # Condition
+        self.visit(cond, o)
+        self.emit.printout(self.emit.emitIFFALSE(label_end, frame))
+        ## Statement
+        self.visit(stmt, o)
+        # Go back to start label
+        self.emit.printout(self.emit.emitGOTO(label_start, frame))
+        
+        self.emit.printout(self.emit.emitLABEL(label_end, frame))
+        
+        frame.exitLoop()
+        
+    def visitDoWhileStmt(self, ast, o):
+        cond = ast.cond
+        stmt = ast.stmt
+        frame = o.frame
+        
+        frame.enterLoop()
+        label_start = frame.getContinueLabel()
+        label_end = frame.getBreakLabel()
+        
+        self.emit.printout(self.emit.emitLABEL(label_start, frame))
+        
+        # Condition & Statement
+        ## Statement
+        self.visit(stmt, o)
+        ## Condition
+        self.visit(cond, o)
+        self.emit.printout(self.emit.emitIFFALSE(label_end, frame))
+        # Go back to start label
+        self.emit.printout(self.emit.emitGOTO(label_start, frame))
+        
+        self.emit.printout(self.emit.emitLABEL(label_end, frame))
     
     def visitBreakStmt(self, ast, o):
         frame = o.frame

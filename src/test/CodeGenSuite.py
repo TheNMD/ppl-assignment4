@@ -380,31 +380,51 @@ class CheckCodeGenSuite(unittest.TestCase):
     #     expect = ""
     #     self.assertTrue(TestCodeGen.test(input, expect, 539))
         
-    def test40(self):
-        input = """ func : function integer (a : integer, b : float) 
-                    {   
-                        for (i = 0, i < 10, i + 1) a = 2 ;
-                        return 2 ;
-                    }
-                   main : function void () { return ; } """
-        expect = ""
-        self.assertTrue(TestCodeGen.test(input, expect, 540))
+    # def test40(self):
+    #     input = """ func : function integer (a : integer, b : float) 
+    #                 {   
+    #                     for (i = 0, i < 10, i + 1) a = 2 ;
+    #                     return 2 ;
+    #                 }
+    #                main : function void () { return ; } """
+    #     expect = ""
+    #     self.assertTrue(TestCodeGen.test(input, expect, 540))
         
-    def test41(self):
+    # def test41(self):
+    #     input = """ func : function integer (a : integer, b : float) 
+    #                 {   
+    #                     for (i = 0, i < 2, i + 1)
+    #                     {
+                            
+    #                     }
+    #                     return 2 ;
+    #                 }
+    #                main : function void () { return ; } """
+    #     expect = ""
+    #     self.assertTrue(TestCodeGen.test(input, expect, 541))
+        
+    def test42(self):
         input = """ func : function integer (a : integer, b : float) 
                     {   
-                        for (i = 0, i < 2, i + 1)
+                        while (1 < 2)
                         {
-                            if (1 > 2) return 3 ;
-                            else return 5 ; 
                         }
                         return 2 ;
                     }
                    main : function void () { return ; } """
         expect = ""
-        self.assertTrue(TestCodeGen.test(input, expect, 541))
+        self.assertTrue(TestCodeGen.test(input, expect, 542))
         
-            
+    def test43(self):
+        input = """ func : function integer (a : integer, b : float) 
+                    {   
+                        do { a = 22 ; continue ; }
+                        while (1 > 2) ;
+                        return 2 ;
+                    }
+                   main : function void () { return ; } """
+        expect = ""
+        self.assertTrue(TestCodeGen.test(input, expect, 543))     
     
     # def test34(self):
     #         input = """ func : function float (a : integer, b : float) 

@@ -25,35 +25,25 @@ Label1:
 .var 0 is a I from Label0 to Label1
 .var 1 is b F from Label0 to Label1
 Label0:
-.var 2 is i I from Label2 to Label4
 Label2:
-	iconst_0
-	istore_2
-	goto Label5
-Label3:
-	iload_2
 	iconst_1
-	iadd
-	istore_2
-Label5:
-	iload_2
 	iconst_2
-	if_icmpge Label6
+	if_icmpge Label4
 	iconst_1
-	goto Label7
-Label6:
-	iconst_0
-Label7:
-	ifle Label4
-Label8:
-Label9:
-	goto Label3
+	goto Label5
 Label4:
+	iconst_0
+Label5:
+	ifle Label3
+Label6:
+Label7:
+	goto Label2
+Label3:
 	iconst_2
 	ireturn
 Label1:
 .limit stack 2
-.limit locals 3
+.limit locals 2
 .end method
 
 .method public static main([Ljava/lang/String;)V
